@@ -1,0 +1,146 @@
+<!DOCTYPE HTML><html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<base href="./">
+	<style>
+		*{ margin:0; padding:0; border:0; }
+		html, body{ height:100%; }
+		body{ font-size:1em; line-height:1.1em; }
+		section{ height:100%; overflow-x: hidden; overflow-y: scroll; }
+		
+		#includes{ display:none; }
+	</style>
+</head>
+<body>
+	<div id="includes"></div>
+<section>
+	<!-- <div class="block"><iframe src="./epub/texte/ch01.xhtml"></iframe></div> -->
+</section>
+<div class="switcher" id="left"></div>
+<div class="switcher" id="right"></div>
+<script type="text/javascript">
+	var search_list_includes = ['link', 'style'];
+	var search_list_exclude = ['text', 'link', 'script', 'style'];
+	
+	var title = '';
+	var data_url = '';
+	
+	var mode_paned = true;
+	var page = 0;
+	var font_size = 1;// en em
+	var line_height = 1.5;// en em
+	
+	var body = document.querySelector('body section');
+	var includes = document.querySelector('body #includes');
+	
+	function load_page(){
+		data_url = parentView.getUrl();
+		parse_return(parentView.getData());
+		}
+	
+	function parse_return(data){
+		includes.innerHTML = '';
+		if(mode_paned === true){ 
+			document.querySelector('body section').innerHTML = '<div id="content" style="position: relative; padding:10px; top: 0px;"></div>'; 
+			body = document.querySelector('body section #content'); 
+		}
+		else{
+			body = document.querySelector('body section');
+			body.innerHTML = '';
+		}
+	
+		base = data_url.substr(0, data_url.lastIndexOf('/')+1);
+		document.querySelector('head base').href = base;
+		
+		var doc = new DOMParser().parseFromString(data, "text/xml");
+		//console.log(doc);
+		doc_head = doc.querySelector('head');
+		doc_body = doc.querySelector('body');
+		
+		if(doc_head.querySelector('title')){ title = doc_head.querySelector('title').innerText; }
+		
+		list = doc_head.querySelectorAll(search_list_includes.join(', '));
+		for(var i = 0; i < list.length; i++){
+			includes.appendChild(list[i]);
+			}
+		
+		list = doc_body.querySelectorAll(search_list_includes.join(', '));
+		for(var i = 0; i < list.length; i++){
+			includes.appendChild(list[i]);
+			}
+		
+		list = doc_body.childNodes;
+		for(var i = 0; i < list.length; i++){
+			if(list[i].tagName !== undefined){
+				if(search_list_exclude.indexOf(list[i].tagName) < 0){
+					//console.log(list[i]);
+					body.appendChild(list[i]);
+					}
+				}
+			}
+		
+		
+		style = document.createElement('style');
+		if(mode_paned === true){
+			style.innerHTML = 'body{ font-size: '+font_size+'em !important; line-height: '+line_height+'em !important; }';
+			changePage(1);
+			}
+		else{
+			style.innerHTML = 'body{ font-size: '+font_size+'em !important; line-height: '+line_height+'em !important; padding:10px; }';
+			}
+		includes.appendChild(style);
+		}
+	
+	function parentCall(msg){
+		try{
+			parentView.event(msg); load_page();
+			if(msg == 'previous'){ changePage(maxPages()); }
+			}
+		catch(error){  }
+		}
+	
+	function maxPages(){
+		var pagerPageHeight = document.querySelector('body section').offsetHeight;
+		var max = document.querySelector('body section #content').offsetHeight / pagerPageHeight;
+		if((max - parseInt(max)) !== 0){ max = parseInt(max) + 1; }
+		return max;
+		}
+	
+	function getPage(){
+		var pagerPageHeight = document.querySelector('body section').offsetHeight;
+		var pos = parseInt(((parseInt(document.querySelector('body section #content').style.top)*-1) + document.querySelector('body section').scrollTop) / pagerPageHeight);
+		console.log('getPage() pos = ', pos);
+		//if((pos - parseInt(pos)) !== 0){ pos = parseInt(pos) + 1; }
+		return pos + 1;
+		}
+	
+	function changePage(pos){
+		console.log('changePage', pos, maxPages());
+		if(pos < 1){  parentCall('previous'); return; }
+		var pagerPageHeight = document.querySelector('body section').offsetHeight;
+		var max = maxPages();
+		if(pos > max){ parentCall('next'); return; }
+		page = pos;
+		document.querySelector('body section').scrollTop = 0;
+		document.querySelector('body section #content').style.top = ''+((-1) * pagerPageHeight * (page - 1))+'px';
+		}
+	
+	function toLeft(evt){
+		page = getPage();
+		console.log('toLeft', page - 1);
+		//if(page - 1 < 1){return;}
+		changePage(page - 1);
+		}
+	
+	function toRight(evt){
+		page = getPage();
+		console.log('toRight', page + 1);
+		//if(page + 1 > maxPages()){return;}
+		changePage(page + 1);
+		}
+	
+	load_page();
+</script>
+</body>
+</html>

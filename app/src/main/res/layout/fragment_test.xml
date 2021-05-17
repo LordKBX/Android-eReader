@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Test_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.home.HomeFragment"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/head_text"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:foreground="?android:attr/textColorPrimary"
+        android:foregroundGravity="center_vertical|center|center_horizontal"
+        android:gravity="center|center_horizontal|center_vertical"
+        android:textAlignment="center"
+        android:visibility="visible"
+        android:text="@string/menu_test"/>
+
+    <TableLayout
+        android:id="@+id/Test_layout_Tab1"
+        android:layout_width="match_parent"
+        android:layout_height="90dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/test_io_status"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="2.5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="0dp"
+                app:srcCompat="@drawable/ic_status_close" />
+
+            <EditText
+                android:id="@+id/test_io_host"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:ems="10"
+                android:hint="Host"
+                android:inputType="textPersonName"
+                android:text="192.168.1.64" />
+
+            <EditText
+                android:id="@+id/test_io_port"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:ems="10"
+                android:hint="Port"
+                android:inputType="numberDecimal"
+                android:text="33004" />
+
+            <Button
+                android:id="@+id/test_io_button"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_margin="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginBottom="0dp"
+                android:padding="0dp"
+                android:paddingStart="0dp"
+                android:paddingLeft="0dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="0dp"
+                android:paddingRight="0dp"
+                android:paddingBottom="0dp"
+                android:text="I/O" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/test_io_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:ems="10"
+                android:hint="USER"
+                android:inputType="textPersonName"
+                android:text="admin" />
+
+            <EditText
+                android:id="@+id/test_io_password"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:ems="10"
+                android:hint="PASSWORD"
+                android:inputType="textPassword"
+                android:text="BookOfTheYear" />
+        </TableRow>
+
+    </TableLayout>
+
+        <TableLayout
+            android:id="@+id/home_table"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:id="@+id/tbr"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal">
+
+                <Button
+                    android:id="@+id/test_button_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:layout_margin="3dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:width="120dp"
+                    android:height="120dp"
+                    android:gravity="center|center_horizontal|center_vertical"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:maxWidth="120dp"
+                    android:maxHeight="120dp"
+                    android:text="TEST LIST" />
+
+                <Button
+                    android:id="@+id/test_button_get_book"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:layout_margin="3dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:width="120dp"
+                    android:height="120dp"
+                    android:gravity="center|center_horizontal|center_vertical"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:maxWidth="120dp"
+                    android:maxHeight="120dp"
+                    android:text="TEST GET BOOK" />
+
+                <Button
+                    android:id="@+id/test_button_echo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|center_horizontal|center_vertical"
+                    android:layout_margin="3dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:width="120dp"
+                    android:height="120dp"
+                    android:gravity="center|center_horizontal|center_vertical"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:maxWidth="120dp"
+                    android:maxHeight="120dp"
+                    android:text="ECHO MAMA" />
+            </TableRow>
+
+        </TableLayout>
+
+    <ScrollView
+        android:id="@+id/Test_layout_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:id="@+id/Test_layout_scroll_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TEST LINE" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

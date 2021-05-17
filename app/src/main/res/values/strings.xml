@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">eReader</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">eReader</string>
+    <string name="nav_header_subtitle">lordkbx.workshop@gmail.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_import">Import file</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_test">Test</string>
+</resources>
