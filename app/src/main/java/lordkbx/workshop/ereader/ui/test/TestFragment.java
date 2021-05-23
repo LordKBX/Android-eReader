@@ -26,6 +26,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.io.PipedReader;
 import java.io.PipedWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -77,6 +80,8 @@ class TCPRunner implements Runnable{
     String SPublicKey = null;
     PublicKey publicKey = null;
     PrivateKey privateKey = null;
+    String cipherSuite = "RSA/ECB/OAEPPadding";
+    OAEPParameterSpec oaepParams = null;
 
     public TCPRunner(View button, TestFragment parent, PipedReader pipedReader){
         v = button;
@@ -104,8 +109,8 @@ class TCPRunner implements Runnable{
             socketOutputStream = socket.getOutputStream();
             socketInputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
-            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPadding");
-            OAEPParameterSpec oaepParams = new OAEPParameterSpec(
+            Cipher cipher = Cipher.getInstance(this.cipherSuite);
+            this.oaepParams = new OAEPParameterSpec(
                     "SHA-256", "MGF1",
                     new MGF1ParameterSpec("SHA-256"),
                     PSource.PSpecified.DEFAULT
@@ -114,7 +119,7 @@ class TCPRunner implements Runnable{
             String keypem  = "-----BEGIN RSA PRIVATE KEY-----\n" +
                     Base64.getEncoder().encodeToString(privateKey.getEncoded()) +
                     "\n-----END RSA PRIVATE KEY-----\n";
-            this.send("ANNOUNCE:"+keypem, false);
+            this.send("ANNOUNCE:"+keypem, false, "");
             if(!socket.isClosed()){ this.updateStatus(1); }
             while (!socket.isClosed()){
                 if(socketInputStream.available() > 0){
@@ -122,17 +127,18 @@ class TCPRunner implements Runnable{
                     int currentBytesRead = 0;
                     byte[] messageByte = new byte[buffer_length];
                     StringBuilder lineB = new StringBuilder();
-                    List<Byte> cht = new ArrayList<Byte>();
+                    ByteArrayOutputStream rawData = new ByteArrayOutputStream();
                     boolean end = false;
                     while(!end){
                         currentBytesRead = socketInputStream.read(messageByte);
                         if(currentBytesRead <= 0){ end = true; }
                         else{
+                            rawData.write(messageByte, 0, currentBytesRead);
                             lineB.append(new String(messageByte, 0, currentBytesRead, StandardCharsets.UTF_8));
                             if(currentBytesRead < buffer_length){ end = true; }
                         }
                     }
-                    String[] lines = lineB.toString().split("\r\r");
+                    String[] lines = lineB.toString().split("\r\r\r\r");
                     for (String line: lines) {
                         Log.d("DEBUG_APP", "MSG <= " + line);
                         this.log("MSG <= " + line);
@@ -161,16 +167,16 @@ class TCPRunner implements Runnable{
                             else {
                                 String token = "";
                                 String data = "";
-                                if(privateKey != null){
+                                if(privateKey != null && !command.equals("GET")){
                                     String controlE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
                                     StringBuilder sub_keyBuilder = new StringBuilder();
                                     String[] tab = parameters.split(":");
 
-                                    cipher.init(Cipher.DECRYPT_MODE, privateKey, oaepParams );
-                                    Log.d("DEBUG_APP", "B64 token => " + tab[0]);
+                                    cipher.init(Cipher.DECRYPT_MODE, privateKey, this.oaepParams );
+                                    // Log.d("DEBUG_APP", "B64 token => " + tab[0]);
                                     byte[] pdata = Base64.getDecoder().decode(tab[0].replace("\n", ""));
                                     token = new String(cipher.doFinal(pdata));
-                                    Log.d("DEBUG_APP", "token => " + token);
+                                    // Log.d("DEBUG_APP", "token => " + token);
                                     long token_crc = this.crc_token(token);
                                     int alphabetSize = controlE.length();
                                     for(int i=0; i<alphabetSize; i++){
@@ -179,15 +185,7 @@ class TCPRunner implements Runnable{
                                         sub_keyBuilder.append(controlE.charAt((int)pos));
                                     }
                                     String sub_key = sub_keyBuilder.toString();
-                                    Log.d("DEBUG_APP", "sub_key => " + sub_key);
-
-                                    /*
-                                    for letter in pre_text:
-                                        if letter.lower() in controlE:
-                                            result += sub_key[controlE.find(letter.lower())]
-                                        else:
-                                            result += letter
-                                    */
+                                    // Log.d("DEBUG_APP", "sub_key => " + sub_key);
 
                                     StringBuilder result = new StringBuilder();
                                     int max = tab[1].length();
@@ -196,6 +194,9 @@ class TCPRunner implements Runnable{
                                         result.append(controlE.charAt(sub_key.indexOf(letter)));
                                     }
                                     data = new String(Base64.getDecoder().decode(result.toString()), StandardCharsets.UTF_8);
+                                    List<String> list_files = new ArrayList<String>(Arrays.asList(tab).subList(2, tab.length));
+
+                                    Log.d("DEBUG_APP", "list_files => " + list_files.toString());
                                 }
                                 else{
                                     data = parameters;
@@ -214,6 +215,9 @@ class TCPRunner implements Runnable{
                                         Log.d("DEBUG_APP", "obj => " + elm.toString());
                                     }
                                 }
+                                else if(command.equals("GET")){
+                                    Log.d("DEBUG_APP", "data => " + data);
+                                }
                             }
                         }
                         catch (javax.crypto.IllegalBlockSizeException err){
@@ -226,6 +230,7 @@ class TCPRunner implements Runnable{
                             Log.d("DEBUG_APP", "IllegalArgumentException => " + err.getMessage());
                         }
                         catch (Exception err){
+                            err.printStackTrace();
                             Log.d("DEBUG_APP", "Exception => " + err.getMessage());
                         }
                     }
@@ -256,6 +261,7 @@ class TCPRunner implements Runnable{
         }
         catch (Exception err){
             this.log("err => " + err.getMessage());
+            err.printStackTrace();
             Log.d("DEBUG_APP", "Exception => " + err.getMessage());
         }
     }
@@ -272,30 +278,53 @@ class TCPRunner implements Runnable{
         List<String> table = new ArrayList<String>();
         Collections.addAll(table, tab);
         int size = token.length();
+        if(size == 0){ return 0; }
         for(int i=0; i<size; i++){
             crc += table.indexOf(""+token.charAt(i));
         }
         return (int)(crc / size);
     }
 
-    public void send(String msg){ send(msg, true); }
-    public void send(String msg, boolean encrypt){
+    public void send(String msg){ send(msg, true, java.util.UUID.randomUUID().toString().replace("-", "").toUpperCase()); }
+    public void send(String msg, boolean encrypt){ send(msg, true, java.util.UUID.randomUUID().toString().replace("-", "").toUpperCase()); }
+    public void send(String msg, boolean encrypt, String token){
         Log.d("DEBUG_APP", "SEND => "+msg);
         this.log("SEND => " + msg);
         try {
             if(encrypt){
+                String controlT = "ABCDEF0123456789";
+                String controlE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+                for(int i=0; i<token.length(); i++){
+                    if(!controlT.contains(""+token.charAt(i))){ return; }
+                }
+                String end_token = "";
+                long crc_token = this.crc_token(token);
+
+                StringBuilder sub_keyBuilder = new StringBuilder();
+
+                int alphabetSize = controlE.length();
+                for(int i=0; i<alphabetSize; i++){
+                    long pos = i + crc_token;
+                    while(pos >= alphabetSize){ pos -= alphabetSize; }
+                    sub_keyBuilder.append(controlE.charAt((int)pos));
+                }
+                String sub_key = sub_keyBuilder.toString();
+
+                String pre_text = new String(Base64.getEncoder().encode(msg.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+                StringBuilder result = new StringBuilder();
+                int max = pre_text.length();
+                for(int i=0; i<max; i++){
+                    char letter = pre_text.charAt(i);
+                    if(controlE.contains(""+pre_text.charAt(i))){ letter = sub_key.charAt(controlE.indexOf(letter)); }
+                    result.append(letter);
+                }
+                msg = result.toString().replace("\n", "");
+
                 try {
-                    Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPadding");
-                    OAEPParameterSpec oaepParams = new OAEPParameterSpec(
-                            "SHA-256", "MGF1",
-                            new MGF1ParameterSpec("SHA-256"),
-                            PSource.PSpecified.DEFAULT
-                    );
-                    cipher.init(Cipher.ENCRYPT_MODE, publicKey, oaepParams);
-                    byte[] pdata = Base64.getEncoder().encode(cipher.doFinal(msg.getBytes()));
-                    msg = new String(pdata);
-                    this.log("SEND CRYPTED => " + msg);
-                    Log.d("DEBUG_APP", "SEND CRYPTED => " + msg);
+                    Cipher cipher = Cipher.getInstance(this.cipherSuite);
+                    cipher.init(Cipher.ENCRYPT_MODE, this.publicKey, this.oaepParams);
+                    byte[] pdata = Base64.getEncoder().encode(cipher.doFinal(token.getBytes()));
+                    end_token = new String(pdata);
                 }
                 catch (javax.crypto.IllegalBlockSizeException err){
                     this.log("IllegalBlockSizeException (crypt)=> " + err.getMessage());
@@ -313,8 +342,11 @@ class TCPRunner implements Runnable{
                     this.log("err => " + err.getMessage());
                     Log.d("DEBUG_APP", "Exception (crypt)=> " + err.getMessage());
                 }
+                msg = end_token + ':' + msg;
+                this.log("SEND CRYPTED => " + msg);
+                Log.d("DEBUG_APP", "SEND CRYPTED => " + msg);
             }
-            msg += "\r\r";
+            msg += "\r\r\r\r";
             socketOutputStream.write(msg.getBytes("UTF-8"));
             socketOutputStream.flush();
         }
@@ -437,7 +469,7 @@ public class TestFragment extends Fragment {
             public void onClick(View v) {
                 Log.d("DEBUG_APP", "Click ButtonGetBook");
                 try{
-                    w.write("SEND:GET:0475049f-8e6b-11eb-9ee5-f828195ec2d4");
+                    w.write("SEND:GET:0475049f-8e6b-11eb-9ee5-f828195ec2d4,05386ab5-8e6b-11eb-9c04-f828195ec2d4");
                 }
                 catch (Exception error){ Log.d("DEBUG_APP", "ERROR => "+error.getMessage()); }
             }
