@@ -1,0 +1,52 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/global_header">
+
+        <ListPreference
+            app:entries="@array/lang_entries"
+            app:entryValues="@array/lang_values"
+            app:key="lang"
+            app:title="@string/app_lang_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <EditTextPreference
+            android:defaultValue="192.168.1.64"
+            android:key="server_address"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/sync_host_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:defaultValue="33004"
+            android:key="server_port"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/sync_port_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:defaultValue="admin"
+            android:key="server_user"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/sync_user_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:defaultValue="BookOfTheYear"
+            android:key="server_password"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/sync_password_title"
+            android:summary="******"   />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

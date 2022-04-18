@@ -2,6 +2,7 @@ package lordkbx.workshop.ereader.ui.home;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import android.content.res.Resources;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 

@@ -12,14 +12,15 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_settings"
-        android:name="lordkbx.workshop.ereader.ui.settings.SettingsFragment"
-        android:label="@string/menu_settings"
-        tools:layout="@layout/fragment_settings" />
-    <fragment
         android:id="@+id/nav_test"
-        android:name="lordkbx.workshop.ereader.ui.test.TestFragment"
-        android:label="@string/menu_test"
-        tools:layout="@layout/fragment_test" />
+        android:name="lordkbx.workshop.ereader.ui.library.LibraryFragment"
+        android:label="@string/menu_library"
+        tools:layout="@layout/fragment_library" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="lordkbx.workshop.ereader.ui.PreferencesFragment"
+        android:label="@string/menu_settings"
+        tools:layout="@layout/fragment_home" />
 
 </navigation>

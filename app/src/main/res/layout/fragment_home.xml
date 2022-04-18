@@ -14,7 +14,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:clickable="true"
-        android:contentDescription="test"
+        android:contentDescription="import"
         android:focusable="auto"
         android:src="@drawable/ic_menu_import"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -48,7 +48,7 @@
             android:gravity="center_horizontal">
 
             <Button
-                android:id="@+id/test_button_getkey"
+                android:id="@+id/Button1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|center_horizontal|center_vertical"
@@ -60,7 +60,7 @@
                 android:text="Button trop long" />
 
             <Button
-                android:id="@+id/test_button_list"
+                android:id="@+id/ButtonSave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|center_horizontal|center_vertical"

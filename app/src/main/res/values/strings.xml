@@ -1,13 +1,28 @@
 <resources>
     <string name="app_name">eReader</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">eReader</string>
     <string name="nav_header_subtitle">lordkbx.workshop@gmail.com</string>
     <string name="nav_header_desc">Navigation header</string>
 
     <string name="menu_home">Home</string>
-    <string name="menu_import">Import file</string>
     <string name="menu_settings">Settings</string>
-    <string name="menu_test">Test</string>
+    <string name="menu_library">Library</string>
+
+    <!-- Preference Restart -->
+    <string name="restart_title">Warning</string>
+    <string name="restart_message">The app will now restart</string>
+    <string name="restart_btn_ok">OK</string>
+
+    <!-- Preference Titles -->
+    <string name="global_header">Global</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Global Preferences -->
+    <string name="app_lang_title">Language</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_host_title">Server Address</string>
+    <string name="sync_port_title">Server Port</string>
+    <string name="sync_user_title">Server User</string>
+    <string name="sync_password_title">Server Password</string>
 </resources>

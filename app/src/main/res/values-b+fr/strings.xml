@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">eReader</string>
+    <string name="nav_header_title">eReader</string>
+    <string name="nav_header_subtitle">lordkbx.workshop@gmail.com</string>
+    <string name="nav_header_desc">Entête Menu</string>
+
+    <string name="menu_home">Acceuil</string>
+    <string name="menu_settings">Réglages</string>
+    <string name="menu_library">Bibliothèque</string>
+
+    <!-- Preference Restart -->
+    <string name="restart_title">Attention</string>
+    <string name="restart_message">Redémarage de l\'application</string>
+    <string name="restart_btn_ok">Compris</string>
+
+    <!-- Preference Titles -->
+    <string name="global_header">Général</string>
+    <string name="sync_header">Synchronisation</string>
+
+    <!-- Global Preferences -->
+    <string name="app_lang_title">Langue</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_host_title">Address Serveur</string>
+    <string name="sync_port_title">Port Serveur</string>
+    <string name="sync_user_title">Nom Utilisateur</string>
+    <string name="sync_password_title">Mot de passe</string>
+</resources>

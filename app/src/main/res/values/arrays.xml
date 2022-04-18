@@ -1,0 +1,14 @@
+<resources>
+    <!-- Lang Preference -->
+    <string-array name="lang_entries">
+        <item>Auto</item>
+        <item>English</item>
+        <item>Français</item>
+    </string-array>
+
+    <string-array name="lang_values">
+        <item>auto</item>
+        <item>en</item>
+        <item>fr</item>
+    </string-array>
+</resources>
