@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="false"
+    android:background="?attr/fullscreenBackgroundColor"
+    android:theme="@style/ThemeOverlay.EReader.FullscreenContainer"
+    android:id="@+id/activity_main"
+    tools:context=".reader.ReaderActivity">
+
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+
+    <WebView
+        android:id="@+id/fullscreen_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="false"
+        android:gravity="center"
+        android:keepScreenOn="true" />
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="-56dp"
+        android:animateLayoutChanges="false"
+        android:fitsSystemWindows="true">
+
+        <ScrollView
+            android:id="@+id/table_of_content_view"
+            style="@style/Widget.Theme.EReader.TableOfContent"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="false"
+            android:paddingBottom="56dp">
+
+            <LinearLayout
+                android:id="@+id/table_of_content_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+    </FrameLayout>
+
+</FrameLayout>

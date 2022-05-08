@@ -21,7 +21,7 @@
         android:theme="@style/Theme.EReader"
         android:installLocation="preferExternal"
         android:requestLegacyExternalStorage="true">
-        <activity android:name=".ReaderActivity">
+        <activity android:name=".reader.ReaderActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainDrawerActivity" />

@@ -7,6 +7,21 @@
     <string name="menu_home">Acceuil</string>
     <string name="menu_settings">Réglages</string>
     <string name="menu_library">Bibliothèque</string>
+    <string name="menu_sync">Synchronisation</string>
+
+    <!-- Home -->
+    <string name="home_label_favs">Favoris</string>
+    <string name="home_label_recents">Ouvert Réçament</string>
+    <string name="home_label_no_files">Aucun livres correspondant</string>
+
+    <!-- Library -->
+    <string name="library_label_no_files">Bibliothèque vide</string>
+
+    <!-- Book Context Menu -->
+    <string name="book_ctm_info">Informations Livre</string>
+    <string name="book_ctm_fav_add">Ajouter aux Favoris</string>
+    <string name="book_ctm_fav_del">Supprimer des Favoris</string>
+    <string name="book_ctm_del">Supprimer de la Bibliothèque</string>
 
     <!-- Preference Restart -->
     <string name="restart_title">Attention</string>
@@ -14,15 +29,57 @@
     <string name="restart_btn_ok">Compris</string>
 
     <!-- Preference Titles -->
-    <string name="global_header">Général</string>
-    <string name="sync_header">Synchronisation</string>
+    <string name="settings_global_header">Général</string>
+    <string name="settings_sync_header">Synchronisation</string>
 
-    <!-- Global Preferences -->
-    <string name="app_lang_title">Langue</string>
+    <!-- Preferences Reset -->
+    <string name="settings_reset">Réinitialiser les réglages</string>
+    <string name="settings_reset_confirm">Confirmez vous la réinitialisation des réglages ?</string>
+    <string name="settings_reset_btn_ok">Oui</string>
+    <string name="settings_reset_btn_cancel">Non</string>
+    <string name="settings_rebase">Purge des données</string>
+    <string name="settings_rebase_confirm">Confirmez vous la purge des données ?</string>
+    <string name="settings_clean_cache">Purge du cache</string>
+    <string name="settings_clean_cache_confirm">Confirmez vous la purge du cache de données ?</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_host_title">Address Serveur</string>
-    <string name="sync_port_title">Port Serveur</string>
-    <string name="sync_user_title">Nom Utilisateur</string>
-    <string name="sync_password_title">Mot de passe</string>
+    <!-- Preferences Global -->
+    <string name="settings_app_lang_title">Langue</string>
+    <string name="settings_app_storage_title">Stockage</string>
+    <string name="settings_app_storage_intern">Mémoire interne</string>
+    <string name="settings_app_storage_sd">Carte SD</string>
+
+    <!-- Preferences Sync -->
+    <string name="settings_sync_host_title">Address Serveur</string>
+    <string name="settings_sync_port_title">Port Serveur</string>
+    <string name="settings_sync_user_title">Nom Utilisateur</string>
+    <string name="settings_sync_password_title">Mot de passe</string>
+
+    <!-- Sync -->
+    <string name="sync_loading">Chargement ...</string>
+    <string name="sync_btn_download">Télécharger selection</string>
+    <string name="sync_btn_delete">Supprimer du stockage la selection</string>
+    <string name="sync_btn_refresh">Recharger liste</string>
+    <string name="sync_message_download_end_ok">Téléchargement terminé</string>
+    <string name="sync_message_download_end_error">Téléchargement terminé, [X] Error(s)</string>
+
+    <!-- Dialog -->
+    <string name="dialog_ok">Compris</string>
+    <string name="dialog_save">Sauvegarder</string>
+    <string name="dialog_cancel">Annuler</string>
+    <string name="dialog_download_title">Téléchargement des livres ...</string>
+    <string name="dialog_get_info_title">Chargement infos fichiers livres ...</string>
+    <string name="dialog_loading">Chargement ...</string>
+
+    <!-- Dialog Book Info -->
+    <string name="dialog_book_info_title">Nom</string>
+    <string name="dialog_book_info_authors">Auteur(s)</string>
+    <string name="dialog_book_info_import_cover">Importer Couverture</string>
+    <string name="dialog_book_info_series">Serie</string>
+    <string name="dialog_book_info_tags">Tags</string>
+    <string name="dialog_book_info_synopsis">Synopsis</string>
+
+    <!-- Reader -->
+    <string name="reader_btn_negatif">Negatif</string>
+    <string name="reader_btn_toc">Table of content</string>
+    <string name="reader_btn_zoom_reset">Zoom Reset</string>
 </resources>

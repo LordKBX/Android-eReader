@@ -70,6 +70,11 @@
 				if(negative === true){ document.querySelector('#negative_zone').innerHTML = ''; negative = false; }
 				else{ document.querySelector('#negative_zone').innerHTML = 'body{filter:invert(100%); background:#000000;}'; negative = true; }
 			}
+
+			function loadPosition(page){
+				position = page;
+				switchToPosition();
+			}
 			
 			switchToPosition();
 		</script>

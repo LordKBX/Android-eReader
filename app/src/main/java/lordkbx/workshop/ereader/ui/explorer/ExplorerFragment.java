@@ -2,48 +2,31 @@ package lordkbx.workshop.ereader.ui.explorer;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
-import android.os.FileObserver;
-import android.os.FileUtils;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +34,7 @@ import java.util.HashMap;
 
 
 import lordkbx.workshop.ereader.R;
-import lordkbx.workshop.ereader.ReaderActivity;
+import lordkbx.workshop.ereader.reader.ReaderActivity;
 
 public class ExplorerFragment extends Fragment {
     private static final int OPEN_DIRECTORY_REQUEST_CODE = 13;

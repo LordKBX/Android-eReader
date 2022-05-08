@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/reader_menu_negatif"
+        android:title="@string/reader_btn_negatif"
+        android:icon="@drawable/ic_contrast"
+        />
+    <item
+        android:id="@+id/reader_menu_toc"
+        android:title="@string/reader_btn_toc"
+        android:icon="@drawable/ic_list"
+        />
+    <item
+        android:id="@+id/reader_menu_zoom_reset"
+        android:title="@string/reader_btn_zoom_reset"
+        android:icon="@drawable/ic_zoom_reset"
+        />
+</menu>

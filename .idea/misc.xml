@@ -3,31 +3,75 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_bookshelf.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_checkbox_off.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_checkbox_on.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_download.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_empty.xml" value="0.2255" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_file.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_folder.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_home.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_list.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_memory.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_more.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_refresh.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_save.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_settings.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_sync.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_trash.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-night/ic_upload.xml" value="0.21" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/checkbox_selector.xml" value="0.21" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_book_icon.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_bookshelf.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_checkbox_off.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_checkbox_on.xml" value="0.33" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_default_cover.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_dots_black.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_empty.xml" value="0.2255" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_home.xml" value="0.236" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_library_empty.xml" value="0.2255" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_list.xml" value="0.2075" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_menu_camera.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_menu_gallery.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_menu_import.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_menu_slideshow.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_more.xml" value="0.2255" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_more_vertical.xml" value="0.236" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_settings.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_status_close.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_status_open.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_status_wait.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_sync.xml" value="0.236" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_test.xml" value="0.2095" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_test_cover.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_trash.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_upload.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_zoom_enlarge.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_zoom_reduce.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_zoom_reset.xml" value="0.236" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/side_nav_bar.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/activity_main_drawer.xml" value="0.20208333333333334" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/activity_reader.xml" value="0.20208333333333334" />
-        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/app_bar_main.xml" value="0.20208333333333334" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/app_bar_main.xml" value="0.5" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/content_main.xml" value="0.20208333333333334" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_explorer.xml" value="0.20208333333333334" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_home.xml" value="0.20208333333333334" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_library.xml" value="0.20208333333333334" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_settings.xml" value="0.3101160862354892" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_slideshow.xml" value="0.20208333333333334" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_sync.xml" value="0.3683712121212121" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/fragment_test.xml" value="0.33" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/layaout_book_info.xml" value="0.1423106350420811" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/nav_header_main.xml" value="0.20208333333333334" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/processing.xml" value="0.14140625" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/layout/reader_main.xml" value="0.15" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/menu/activity_main_drawer.xml" value="0.20260416666666667" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/menu/main_drawer.xml" value="0.20208333333333334" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/menu/reader_menu.xml" value="0.15" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/menu/sync_menu.xml" value="0.151953125" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/menu/sync_top_menu.xml" value="0.151953125" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/xml/root_preferences.xml" value="0.20208333333333334" />
       </map>
     </option>

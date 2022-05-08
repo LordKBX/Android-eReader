@@ -1,7 +1,7 @@
 <!DOCTYPE HTML><html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0, minimum-scale=0.5">
 	<base href="./">
 	<style>
 		*{ margin:0; padding:0; border:0; }
@@ -10,7 +10,10 @@
 		section{ height:100%; overflow-x: hidden; overflow-y: scroll; }
 		
 		#includes{ display:none; }
+
+		img{ max-width:100%; max-height:100%; }
 	</style>
+	<style id="negative_zone"></style>
 </head>
 <body>
 	<div id="includes"></div>
@@ -30,14 +33,73 @@
 	var page = 0;
 	var font_size = 1;// en em
 	var line_height = 1.5;// en em
+
+	var negative = false;
 	
 	var body = document.querySelector('body section');
 	var includes = document.querySelector('body #includes');
 	
+	
+	/*
+	SECTION SCROLL
+	*/
+	var scrollKeys = {37: 1, 38: 1, 39: 1, 40: 1};
+
+	function preventDefault(e) { e.preventDefault(); }
+	
+	function preventDefaultForScrollKeys(e) {
+	  if (scrollKeys[e.keyCode]) { preventDefault(e); return false; }
+	}
+
+	// modern Chrome requires { passive: false } when adding event
+	var scrollSupportsPassive = false;
+	try {
+	  window.addEventListener("test", null, Object.defineProperty({}, 'passive', {
+		get: function () { scrollSupportsPassive = true; }
+	  }));
+	} catch(e) {}
+
+	var wheelOpt = scrollSupportsPassive ? { passive: false } : false;
+	var wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
+	
+	// call this to Disable
+	function disableScroll() {
+	  window.addEventListener('DOMMouseScroll', preventDefault, false); // older FF
+	  window.addEventListener(wheelEvent, preventDefault, wheelOpt); // modern desktop
+	  window.addEventListener('touchmove', preventDefault, wheelOpt); // mobile
+	  window.addEventListener('keydown', preventDefaultForScrollKeys, false);
+	}
+	
+	// call this to Enable
+	function enableScroll() {
+	  window.removeEventListener('DOMMouseScroll', preventDefault, false);
+	  window.removeEventListener(wheelEvent, preventDefault, wheelOpt);
+	  window.removeEventListener('touchmove', preventDefault, wheelOpt);
+	  window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
+	}
+
+	/*
+	SECTION GLOBAL
+	*/
 	function load_page(){
-		data_url = parentView.getUrl();
-		parse_return(parentView.getData());
+		try{
+			data_url = parentView.getUrl();
+			setZoom(parentView.getZoom());
+			scroll = parentView.getScroll();
+			parentView.logError("parentView.getScroll() = "+scroll);
+			parse_return(parentView.getData());
+
+			List = document.querySelectorAll('svg image')
+			for(i=0; i<List.length; i++){
+				List[i].setAttribute('width', '100%');
+				List[i].removeAttribute('height');
+			}
+
+			document.querySelector('body section').scrollTop = Math.abs(scroll);
+			parentView.saveScroll(scroll);
 		}
+		catch(error){ parentView.logError(error.message); }
+	}
 	
 	function parse_return(data){
 		includes.innerHTML = '';
@@ -97,7 +159,7 @@
 			parentView.event(msg); load_page();
 			if(msg == 'previous'){ changePage(maxPages()); }
 			}
-		catch(error){  }
+		catch(error){ parentView.logError(JSON.stringify(error)); }
 		}
 	
 	function maxPages(){
@@ -124,6 +186,9 @@
 		page = pos;
 		document.querySelector('body section').scrollTop = 0;
 		document.querySelector('body section #content').style.top = ''+((-1) * pagerPageHeight * (page - 1))+'px';
+
+		parentView.saveScroll((-1) * pagerPageHeight * (page - 1));
+		parentView.recordPosition();
 		}
 	
 	function toLeft(evt){
@@ -139,8 +204,26 @@
 		//if(page + 1 > maxPages()){return;}
 		changePage(page + 1);
 		}
-	
+
+	function negation(){
+		if(negative === true){ document.querySelector('#negative_zone').innerHTML = ''; negative = false; }
+		else{ document.querySelector('#negative_zone').innerHTML = 'body{filter:invert(100%); background:#000000;}'; negative = true; }
+	}
+
+	function setZoom(scale){
+		scale = parseFloat(scale);
+		if(isNaN(scale)){ return; }
+		if(scale > 5.0){ scale = 5.0; }
+		if(scale < 0.5){ scale = 0.5; }
+		document.body.style.zoom=scale;
+		blur();
+		parentView.saveZoom(scale);
+		parentView.recordPosition();
+	}
+
+	document.body.style.zoom=1.0;
 	load_page();
+	disableScroll();
 </script>
 </body>
 </html>

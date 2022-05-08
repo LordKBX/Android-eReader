@@ -2,84 +2,125 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/Home_layout"
+    android:id="@+id/home_main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".ui.home.HomeFragment"
+    android:orientation="vertical">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:clickable="true"
-        android:contentDescription="import"
-        android:focusable="auto"
-        android:src="@drawable/ic_menu_import"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/head_text"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:foregroundGravity="center_vertical|center|center_horizontal"
-        android:gravity="center|center_horizontal|center_vertical"
-        android:textAlignment="center"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/app_name"
-        tools:visibility="visible" />
+        android:layout_height="match_parent">
 
-    <TableLayout
-        android:id="@+id/home_table"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/head_text">
-
-        <TableRow
-            android:id="@+id/tbr"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-            <Button
-                android:id="@+id/Button1"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/home_label_favs"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center|center_horizontal|center_vertical"
-                android:width="120dp"
-                android:height="120dp"
-                android:gravity="center|center_horizontal|center_vertical"
-                android:maxWidth="120dp"
-                android:maxHeight="120dp"
-                android:text="Button trop long" />
+                android:paddingLeft="5dp"
+                android:text="@string/home_label_favs"
+                android:textSize="24sp" />
 
-            <Button
-                android:id="@+id/ButtonSave"
-                android:layout_width="wrap_content"
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/home_flex_layout_favs"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center|center_horizontal|center_vertical"
-                android:layout_margin="3dp"
-                android:layout_marginStart="3dp"
-                android:layout_marginLeft="3dp"
-                android:layout_marginTop="3dp"
-                android:layout_marginEnd="3dp"
-                android:layout_marginRight="3dp"
-                android:layout_marginBottom="3dp"
-                android:width="120dp"
-                android:height="120dp"
-                android:gravity="center|center_horizontal|center_vertical"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:maxWidth="120dp"
-                android:maxHeight="120dp"
-                android:text="Button" />
-        </TableRow>
+                android:padding="10dp"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:justifyContent="space_evenly">
 
-    </TableLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    tools:layout_editor_absoluteX="10dp"
+                    tools:layout_editor_absoluteY="10dp">
+
+                    <ProgressBar
+                        android:id="@+id/home_favs_loading_progress"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp" />
+
+                    <TextView
+                        android:id="@+id/home_favs_loading_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/sync_loading" />
+                </LinearLayout>
+
+            </com.google.android.flexbox.FlexboxLayout>
+
+            <TextView
+                android:id="@+id/home_label_recents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="5dp"
+                android:text="@string/home_label_recents"
+                android:textSize="24sp" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/home_flex_layout_recents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:justifyContent="space_evenly">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    tools:layout_editor_absoluteX="10dp"
+                    tools:layout_editor_absoluteY="10dp">
+
+                    <ProgressBar
+                        android:id="@+id/home_recents_loading_progress"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp" />
+
+                    <TextView
+                        android:id="@+id/home_recents_loading_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/sync_loading" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    tools:layout_editor_absoluteX="10dp"
+                    tools:layout_editor_absoluteY="10dp">
+
+                    <ImageView
+                        android:id="@+id/imageView2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_empty" />
+
+                    <TextView
+                        android:id="@+id/home_recents_no_vontent_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="@string/home_label_no_files" />
+                </LinearLayout>
+
+            </com.google.android.flexbox.FlexboxLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

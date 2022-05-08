@@ -1,66 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="false"
-    android:background="?attr/fullscreenBackgroundColor"
-    android:theme="@style/ThemeOverlay.EReader.FullscreenContainer"
-    tools:context=".ReaderActivity">
+    tools:context=".reader.ReaderActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-
-    <WebView
-        android:id="@+id/fullscreen_content"
+    <!--<com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:animateLayoutChanges="false"
-        android:gravity="center"
-        android:keepScreenOn="true" />
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.EReader.AppBarOverlay">
 
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:animateLayoutChanges="false"
-        android:fitsSystemWindows="true">
-
-        <ScrollView
-            android:id="@+id/table_of_content_view"
-            style="@style/Widget.Theme.EReader.TableOfContent"
-            android:layout_width="250dp"
-            android:layout_height="match_parent"
-            android:animateLayoutChanges="false"
-            android:paddingTop="50dp">
-
-            <LinearLayout
-                android:id="@+id/table_of_content_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="@style/Widget.Theme.EReader.ButtonBar.Fullscreen"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent">
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.EReader.Reader.ButtonBar" />
 
-            <Button
-                android:id="@+id/dummy_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="dummy_button" />
+    </com.google.android.material.appbar.AppBarLayout>-->
 
-        </LinearLayout>
-    </FrameLayout>
+    <include layout="@layout/reader_main" />
 
-</FrameLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:focusableInTouchMode="false"
+        android:focusedByDefault="false"
+        android:theme="@style/Theme.EReader.Reader.ButtonBar"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconTint="@color/white"
+        app:menu="@menu/reader_menu" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

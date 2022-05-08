@@ -14,6 +14,10 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="Theme.EReader.Reader.ButtonBar" parent="Widget.Theme.EReader.ButtonBar.Fullscreen">
+        <item name="android:background">@color/dark_gray</item>
+    </style>
+
     <style name="ThemeOverlay.EReader.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
         <item name="fullscreenTextColor">@color/light_blue_A400</item>
