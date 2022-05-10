@@ -25,6 +25,7 @@ public class MultiSpinner extends androidx.appcompat.widget.AppCompatSpinner imp
     private boolean[] selected;
     private String defaultText;
     private MultiSpinnerListener listener;
+    private AlertDialog alert;
 
     public MultiSpinner(Context context) {
         super(context);
@@ -78,6 +79,7 @@ public class MultiSpinner extends androidx.appcompat.widget.AppCompatSpinner imp
 
     @Override
     public boolean performClick() {
+        try{ alert.dismiss(); } catch (Exception err){ }
         try{
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setMultiChoiceItems(items.toArray(new CharSequence[items.size()]), selected, this);
@@ -87,10 +89,13 @@ public class MultiSpinner extends androidx.appcompat.widget.AppCompatSpinner imp
             ll.setWeightSum(2);
             EditText input = new EditText(this.getContext());
             input.setInputType(InputType.TYPE_CLASS_TEXT);
-            ll.addView(input);
+            input.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
             Button btn = new Button(this.getContext());
             btn.setText("Add");
+            btn.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             ll.addView(btn);
+            ll.addView(input);
             btn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -120,7 +125,7 @@ public class MultiSpinner extends androidx.appcompat.widget.AppCompatSpinner imp
                 }
             );
             builder.setOnCancelListener(this);
-            builder.show();
+            alert = builder.show();
         }
         catch (Exception err){ return false; }
         return true;

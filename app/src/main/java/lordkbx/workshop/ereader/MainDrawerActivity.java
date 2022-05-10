@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.MediaStore;
+import android.renderscript.ScriptGroup;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -68,6 +69,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -94,7 +96,8 @@ public class MainDrawerActivity extends AppCompatActivity {
     private String dialogRetText;
 
     private ImageView BookInfoCover = null;
-    private EditText BookInfoCoverHiden = null;
+    private String BookInfoCoverHiden = null;
+    private boolean BookInfoCoverChanged = false;
     private static final int coverMaxWidth = 600;
     private ArrayMap<String, Integer> currentTags = null;
 
@@ -139,6 +142,7 @@ public class MainDrawerActivity extends AppCompatActivity {
         MainDrawerActivity.updateLanguage(this, end);
 
         super.onCreate(savedInstanceState);
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.statusBar, getTheme()));
         Storage.setContext(this.getApplicationContext());
         //dbh.getReadableDatabase().
 
@@ -165,9 +169,9 @@ public class MainDrawerActivity extends AppCompatActivity {
                     sync.DownloadSelection();
 
                 }
-                else if(item.getItemId() == R.id.sync_menu_delete){
-                    Log.d("onMenuItemClick","R.id.sync_menu_delete");
-                    //sync.DownloadSelection();
+                else if(item.getItemId() == R.id.sync_menu_upload){
+                    Log.d("onMenuItemClick","R.id.sync_menu_upload");
+                    sync.UploadSelection();
                 }
                 else if(item.getItemId() == R.id.sync_menu_refresh){
                     Log.d("onMenuItemClick","R.id.sync_menu_refresh");
@@ -442,28 +446,13 @@ public class MainDrawerActivity extends AppCompatActivity {
                     byte[] dataImg = baos1.toByteArray();
                     baos1.close();
 
-                    Bitmap bm = BitmapFactory.decodeByteArray(dataImg, 0, dataImg.length);
-                    int width = bm.getWidth(), height = bm.getHeight();
-                    if(width > coverMaxWidth){
-                        height = Integer.parseInt(""+(height * coverMaxWidth / width));
-                        width = coverMaxWidth;
-                    }
-                    if(height > coverMaxWidth){
-                        width = Integer.parseInt(""+(width * coverMaxWidth / height));
-                        height = coverMaxWidth;
-                    }
-                    Log.e("cover resize", ""+bm.getWidth()+"x"+bm.getHeight()+" => "+width+"x"+height);
-                    bm = Bitmap.createScaledBitmap(bm, width, height, false);
-                    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos2); // bm is the bitmap object
-                    dataImg = baos2.toByteArray();
-                    baos2.close();
                     InputStream is = new ByteArrayInputStream(dataImg);
 
                     String cover = Base64.encodeToString(dataImg, Base64.DEFAULT);
-                    BookInfoCoverHiden.setText(cover);
+                    BookInfoCoverHiden = cover;
                     BookInfoCover.setImageDrawable(Drawable.createFromStream(is, null));
-                    //BookInfoCover.setImageDrawable(utils.decodeDrawable(this, cover));
+                    BookInfoCoverChanged = true;
+                    Storage.deleteFile(uri.toString().replace("file://", ""));
                 }
                 catch (Exception err){
 
@@ -587,7 +576,7 @@ public class MainDrawerActivity extends AppCompatActivity {
                     ImagePicker.with(MainDrawerActivity.getInstance())
                             .crop()	    			//Crop image(Optional), Check Customization for more option
                             .compress(1024)			//Final image size will be less than 1 MB(Optional)
-                            .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                            .maxResultSize(600, 600)	//Final image resolution will be less than 1080 x 1080(Optional)
                             .start();
 
                     ((EditText)mView.findViewById(R.id.layout_book_info_cover_hidden)).setText("");
@@ -630,13 +619,13 @@ public class MainDrawerActivity extends AppCompatActivity {
             });
 
             BookInfoCover = ((ImageView)mView.findViewById(R.id.layout_book_info_cover));
-            BookInfoCoverHiden = ((EditText)mView.findViewById(R.id.layout_book_info_cover_hidden));
+            BookInfoCoverHiden = "";
+            BookInfoCoverChanged = false;
             Drawable drawable = utils.decodeDrawable(this, books.get(0).getString("cover"));
             if(drawable != null){
-                BookInfoCoverHiden.setText(books.get(0).getString("cover"));
+                BookInfoCoverHiden = books.get(0).getString("cover");
                 BookInfoCover.setImageDrawable(drawable);
             }
-            else{ BookInfoCoverHiden.setText(""); }
 
             ((EditText)mView.findViewById(R.id.layout_book_info_input_title)).setText(books.get(0).getString("title"));
             ((EditText)mView.findViewById(R.id.layout_book_info_input_authors)).setText(books.get(0).getString("authors"));
@@ -644,7 +633,7 @@ public class MainDrawerActivity extends AppCompatActivity {
             ((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).setText(books.get(0).getString("series_vol"));
             ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText(books.get(0).getString("tags").replace(";", "\n"));
             String syp = books.get(0).getString("synopsis");
-            ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).setText((syp.equals("null"))?books.get(0).getString("synopsis"):"");
+            ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).setText((syp.equals("null"))?"":books.get(0).getString("synopsis"));
 
             builder.setPositiveButton(getResources().getString(R.string.dialog_save), new DialogInterface.OnClickListener() {
                 @Override
@@ -652,13 +641,29 @@ public class MainDrawerActivity extends AppCompatActivity {
                     String title = ((EditText)mView.findViewById(R.id.layout_book_info_input_title)).getText().toString();
                     String authors = ((EditText)mView.findViewById(R.id.layout_book_info_input_authors)).getText().toString();
                     String series_name = ((EditText)mView.findViewById(R.id.layout_book_info_input_series_name)).getText().toString();
-                    String series_vol = ((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).getText().toString();
-                    String tags = ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).getText().toString();
+                    double series_vol = Double.parseDouble(((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).getText().toString());
+                    String tagsString = ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).getText().toString();
                     String synopsis = ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).getText().toString();
-                    String cover = ((EditText)mView.findViewById(R.id.layout_book_info_cover_hidden)).getText().toString();
-                    Log.e("TITLE", title);
-                    //dialogRetText = input.getText().toString();
+                    String cover = BookInfoCoverHiden;
+
+                    List<String> lst = new ArrayList<String>();
+                    for(String tag : tagsString.split("\n")){ lst.add(tag.trim()); }
+                    lst.sort(new StringComparator());
+                    String[] tags = lst.toArray(new String[]{});
+
+                    try{
+                        if(!books.get(0).getString("title").equals(title)){ dbh.updateBookTitle(bookID, title); }
+                        if(!books.get(0).getString("authors").equals(authors)){ dbh.updateBookAuthors(bookID, authors); }
+                        if(!books.get(0).getString("series").equals(series_name) || Double.parseDouble(books.get(0).getString("series_vol")) != series_vol){ dbh.updateBookSeries(bookID, series_name, series_vol); }
+                        if(!books.get(0).getString("tags").replace(";", "\n").equals(tagsString)){ dbh.updateBookTags(bookID, tags); }
+                        if(!books.get(0).getString("synopsis").equals(synopsis)){ dbh.updateBookSynopsis(bookID, synopsis); }
+                        if(BookInfoCoverChanged){ dbh.updateBookCover(bookID, "data:image/jpeg;base64,"+cover); }
+                    }
+                    catch (Exception err){}
+
                     dialog.dismiss();
+                    BookInfoCoverHiden = "";
+                    BookInfoCover = null;
                     recreate();
                 }
             });

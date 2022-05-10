@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
@@ -45,6 +46,7 @@ import com.google.gson.Gson;
 import lordkbx.workshop.ereader.MainDrawerActivity;
 import lordkbx.workshop.ereader.R;
 import lordkbx.workshop.ereader.Storage;
+import lordkbx.workshop.ereader.night;
 import lordkbx.workshop.ereader.ui.library.LibraryFragment;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
@@ -56,6 +58,7 @@ public class ReaderActivity extends AppCompatActivity{
     private static final int AUTO_HIDE_DELAY_MILLIS = 50000;
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
+    private final Handler mNightHandler = new Handler();
     public WebView mContentView;
     private View.OnTouchListener touchListener;
     private int SideTouchZoneWidth = 0;
@@ -174,6 +177,7 @@ public class ReaderActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setNavigationBarColor(getResources().getColor(R.color.statusBar, getTheme()));
         setContentView(R.layout.activity_reader);
         parent = (MainDrawerActivity)getParent();
         mScaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
@@ -409,10 +413,6 @@ public class ReaderActivity extends AppCompatActivity{
                     "text/html", "utf-8",null
             );
         }
-
-        Intent intentClose = new Intent();
-        intentClose.putExtra("Code", 10);
-        setResult(RESULT_OK, intentClose);
     }
 
     @Override
@@ -472,7 +472,7 @@ public class ReaderActivity extends AppCompatActivity{
                     @Override
                     public void onClick(View view) {
                         int pos = (int) view.getTag();
-                        mContentView.evaluateJavascript("position=" + pos + "; switchToPosition(); ''+position;", new ValueCallback<String>() {
+                        mContentView.evaluateJavascript("position=" + pos + "; switchToPosition();", new ValueCallback<String>() {
                             @Override
                             public void onReceiveValue(String s) {
                                 hide();
@@ -531,6 +531,18 @@ public class ReaderActivity extends AppCompatActivity{
 
         try{ ((MainDrawerActivity)this.getParent()).loadingDialog.dismiss(); } catch (Exception err){}
 
+        if(night.isNight(this)){
+            mNightHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mContentView.evaluateJavascript("negation();", new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String s) {}
+                    });
+                }
+            }, UI_ANIMATION_DELAY);
+        }
+
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
@@ -563,7 +575,9 @@ public class ReaderActivity extends AppCompatActivity{
 
     public void show() {
         // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        //        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        );
         //mToolbar.setVisibility(View.VISIBLE);
         mBottomNavigationView.setVisibility(View.VISIBLE);
         mVisible = true;

@@ -1,5 +1,6 @@
 package lordkbx.workshop.ereader.ui.sync;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.FileUtils;
@@ -58,21 +59,18 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 class APIClient{
-    String host = null;
-    int port = 33004;
-    Message myMessage;
-    SyncFragment frag;
-    PipedReader reader;
-    RequestQueue queue;
-    String Host;
-    String Port;
+    private String host = null;
+    private int port = 33004;
+    private SyncFragment frag;
+    private RequestQueue queue;
+    private String Host;
+    private String Port;
 
-    public APIClient(SyncFragment parent, PipedReader pipedReader){
+    public APIClient(SyncFragment parent){
         frag = parent;
-        reader = pipedReader;
         NukeSSLCerts.nuke();
         CookieManager manager = new CookieManager();
-        CookieHandler.setDefault( manager  );
+        CookieHandler.setDefault( manager );
         queue = Volley.newRequestQueue(parent.getContext());
     }
     public void setHost(String host, String port){
@@ -236,37 +234,43 @@ class APIClient{
 }
 
 public class SyncFragment extends Fragment {
-    View.OnClickListener btnListener;
+    private View.OnClickListener btnListener;
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
     private static File directory;
     private static View root;
     private static MainDrawerActivity parent;
     private static FlexboxLayout mainLayout;
 
-    SyncFragment frag;
-    PipedReader r;
-    PipedWriter w;
-    APIClient client;
+    private SyncFragment frag;
+    private APIClient client;
 
-    SharedPreferences sharedPreferences;
-    String Host;
-    String Port;
-    String User;
-    String Password;
+    private SharedPreferences sharedPreferences;
+    private String Host;
+    private String Port;
+    private String User;
+    private String Password;
 
-    JSONObject dataBooks;
-    JSONObject dataBooksFiles;
-    JSONObject dataBooksCovers;
-    JSONObject layoutList;
-    JSONObject checkboxes;
-    int lastid = 24999;
+    private JSONObject dataBooks;
+    private JSONObject dataBooksFiles;
+    private JSONObject dataBooksCovers;
+    private JSONObject layoutList;
+    private JSONObject checkboxes;
+    private int lastid = 24999;
 
-    int dowloadFileIndex = 0;
-    int dowloadFileCount = 0;
-    int dowloadFileErrors = 0;
-    List<String> downloadList = new ArrayList<String>();
-    List<JSONObject> downloadListFiles = new ArrayList<JSONObject>();
-    AlertDialog downloadDialog = null;
+    private AlertDialog downloadDialog = null;
+    private int downloadFileIndex = 0;
+    private int downloadFileCount = 0;
+    private int downloadFileErrors = 0;
+    private List<String> downloadListCovers = new ArrayList<String>();
+    private List<String> downloadListBooks = new ArrayList<String>();
+    private List<JSONObject> downloadListFiles = new ArrayList<JSONObject>();
+    private int uploadFileIndex = 0;
+    private int uploadFileCount = 0;
+    private int uploadFileErrors = 0;
+    private List<String> uploadListBooks = new ArrayList<String>();
+
+    private List<JSONObject> currentBooks;
+    private List<String> booksIDS;
 
     @Override
     public void onResume() {
@@ -289,9 +293,6 @@ public class SyncFragment extends Fragment {
         parent = (MainDrawerActivity)getActivity();
         parent.setSyncFragment(this);
         frag = this;
-        r = new PipedReader();
-        w = new PipedWriter();
-        try{ w.connect(r); } catch (IOException err){}
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getContext());
 
@@ -308,7 +309,7 @@ public class SyncFragment extends Fragment {
         User = sharedPreferences.getString("server_user", "");
         Password = sharedPreferences.getString("server_password", "");
         dataBooks = null;
-        client = new APIClient(frag, r);
+        client = new APIClient(frag);
         client.setHost(Host, Port);
         connect();
         try{ ((MainDrawerActivity)this.getActivity()).showBottomBar(); } catch (Exception err){}
@@ -342,6 +343,9 @@ public class SyncFragment extends Fragment {
 
     public void connect(){
         loadingScreen();
+        currentBooks = parent.dbh.getBooks();
+        booksIDS = parent.dbh.getBooksIds();
+        Log.e("connect, booksIDS", new Gson().toJson(booksIDS));
         this.log("LOG START");
         client.Login(User, Password,
             new CallBack() {
@@ -363,19 +367,23 @@ public class SyncFragment extends Fragment {
                                 if(dataBooks.get("Data").getClass().getName().equals("org.json.JSONArray")){
                                     JSONArray list = (JSONArray) dataBooks.get("Data");
 
-                                    dowloadFileIndex = 0;
-                                    dowloadFileCount = 0;
-                                    dowloadFileErrors = 0;
-                                    downloadList = new ArrayList<String>();
+                                    downloadFileIndex = 0;
+                                    downloadFileCount = 0;
+                                    downloadFileErrors = 0;
+                                    downloadListCovers = new ArrayList<String>();
 
                                     for(int i=0; i<list.length(); i++){
                                         JSONObject book = (JSONObject)list.get(i);
+                                        String title = book.getString("title").trim();
+                                        String serie = book.getString("series").trim();
+                                        if (!serie.equals("") && !serie.equals("null")){ title = serie + " - " + title; }
                                         LinearLayout book_case = utils.bookCase(
                                             parent,
                                             mainLayout,
                                             book.getString("guid"),
-                                            book.getString("title"),
-                                            false, true
+                                            title,
+                                            booksIDS.contains(book.getString("guid")),
+                                            true
                                         );
                                         layoutList.put(book.getString("guid"), book_case.getId());
                                         mainLayout.addView(book_case);
@@ -389,14 +397,15 @@ public class SyncFragment extends Fragment {
                                             utils.replaceBookCaseCover(book_case, cover);
                                             dataBooksCovers.put(book.getString("guid"), cover);
                                         }
-                                        else{ downloadList.add(book.getString("guid")); }
+                                        else{ downloadListCovers.add(book.getString("guid")); }
                                     }
                                     loadCoverNext();
                                 }
                                 checkboxes = utils.getCheckboxesArray();
                             }
                             catch (Exception err){
-                                errorScreen(err.getMessage());
+                                Log.e("get books", err.getMessage());
+                                err.printStackTrace();
                             }
                         }
 
@@ -459,9 +468,9 @@ public class SyncFragment extends Fragment {
 
     private void loadCoverNext(){
         if(getMemoryBooks() == null){ return; }
-        if(downloadList.size() <= 0){ return; }
-        if(dowloadFileIndex >= downloadList.size()){ return; }
-        client.Get("https://" + Host + ":" + Port + "/book/cover/"+downloadList.get(dowloadFileIndex),
+        if(downloadListCovers.size() <= 0){ return; }
+        if(downloadFileIndex >= downloadListCovers.size()){ return; }
+        client.Get("https://" + Host + ":" + Port + "/book/cover/"+downloadListCovers.get(downloadFileIndex),
             new CallBack() {
                 @Override
                 public void run(String body, String header) {
@@ -481,17 +490,18 @@ public class SyncFragment extends Fragment {
                     catch (Exception err){
                         err.printStackTrace();
                     }
+                    downloadFileIndex += 1;
                     loadCoverNext();
                 }
 
                 @Override
                 public void error(String error) {
+                    downloadFileIndex += 1;
                     loadCoverNext();
                 }
             }
         );
 
-        dowloadFileIndex += 1;
     }
 
     public JSONArray getMemoryBooks(){
@@ -575,47 +585,80 @@ public class SyncFragment extends Fragment {
 
     public void DownloadSelection(){
         if(getMemoryBooks() == null){ return; }
-        downloadList = new ArrayList<String>();
+        downloadListBooks = new ArrayList<String>();
         downloadListFiles = new ArrayList<JSONObject>();
-        dowloadFileIndex = 0;
-        dowloadFileCount = 0;
-        dowloadFileErrors = 0;
+        downloadFileIndex = 0;
+        downloadFileCount = 0;
+        downloadFileErrors = 0;
+        boolean exist = false;
         int cp = mainLayout.getChildCount();
         for(int i = 0; i<cp; i++){
             int idbox = mainLayout.getChildAt(i).getLabelFor();
             Log.d("idbox", ""+idbox);
             CheckBox chb = (CheckBox) root.findViewById(idbox);
             if(chb.isChecked()){
-                try{ downloadList.add(checkboxes.getString(""+idbox)); }
+                try{
+                    downloadListBooks.add(checkboxes.getString(""+idbox));
+                    if(booksIDS.contains(checkboxes.getString(""+idbox))){ exist = true; }
+                }
                 catch (Exception err){}
             }
         }
-        Log.d("downloadList", ""+new Gson().toJson(downloadList));
-        if(downloadList.size() != 0){
-            dowloadFileCount = downloadList.size();
-            LayoutInflater inflater = requireActivity().getLayoutInflater();
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            //builder.setTitle(R.string.dialog_download_title);
-            builder.setTitle(R.string.dialog_get_info_title);
-            builder.setMessage("0 / "+downloadList.size());
-            downloadDialog = builder.create();
-            downloadDialog.show();
-            downloadInfosNext();
+        Log.d("downloadList", ""+new Gson().toJson(downloadListBooks));
+        if(downloadListBooks.size() != 0){
+            if(exist){
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setCancelable(false);
+                builder.setTitle(R.string.sync_confirm_replace_title);
+                builder.setMessage(R.string.sync_confirm_replace_message);
+                builder.setNegativeButton(getText(R.string.dialog_no), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                builder.setPositiveButton(getText(R.string.dialog_yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        downloadFileCount = downloadListBooks.size();
+                        LayoutInflater inflater = requireActivity().getLayoutInflater();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        //builder.setTitle(R.string.dialog_download_title);
+                        builder.setTitle(R.string.dialog_get_info_title);
+                        builder.setMessage("0 / "+downloadListBooks.size());
+                        downloadDialog = builder.create();
+                        downloadDialog.show();
+                        downloadInfosNext();
+                    }
+                });
+            }
+            else{
+                downloadFileCount = downloadListBooks.size();
+                LayoutInflater inflater = requireActivity().getLayoutInflater();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                //builder.setTitle(R.string.dialog_download_title);
+                builder.setTitle(R.string.dialog_get_info_title);
+                builder.setMessage("0 / "+downloadListBooks.size());
+                downloadDialog = builder.create();
+                downloadDialog.show();
+                downloadInfosNext();
+            }
         }
     }
 
     private void downloadInfosNext(){
         if(getMemoryBooks() == null){ return; }
-        if(downloadList.size() <= 0){ return; }
-        if(dowloadFileIndex >= downloadList.size()){
-            dowloadFileIndex = 0;
-            dowloadFileCount = downloadListFiles.size();
+        if(downloadListBooks.size() <= 0){ return; }
+        if(downloadFileIndex >= downloadListBooks.size()){
+            downloadFileIndex = 0;
+            downloadFileCount = downloadListFiles.size();
             downloadDialog.setTitle(R.string.dialog_download_title);
-            downloadDialog.setMessage("0 / "+downloadList.size());
+            downloadDialog.setMessage("0 / "+downloadListBooks.size());
             downloadNext();
             return;
         }
-        client.Get("https://" + Host + ":" + Port + "/book/files/"+getMemoryBookInfo(downloadList.get(dowloadFileIndex),"guid"),
+        client.Get("https://" + Host + ":" + Port + "/book/files/"+getMemoryBookInfo(downloadListBooks.get(downloadFileIndex),"guid"),
             new CallBack() {
                 @Override
                 public void run(String body, String header) {
@@ -625,10 +668,12 @@ public class SyncFragment extends Fragment {
                         String[] taburl = header.split("/");
                         String bookId = taburl[taburl.length - 1];
 
+                        if(booksIDS.contains(bookId)){ parent.dbh.deleteBook(bookId); }
+
                         JSONObject data = (JSONObject) new JSONTokener(body).nextValue();
                         JSONArray files = (JSONArray) data.get("Data");
                         dataBooksFiles.put(bookId, files);
-                        downloadDialog.setMessage("" + dowloadFileIndex + " / "+dowloadFileCount);
+                        downloadDialog.setMessage("" + downloadFileIndex + " / "+downloadFileCount);
 
                         for(int u=0; u<files.length(); u++){
                             JSONObject file = (JSONObject)files.get(u);
@@ -648,7 +693,7 @@ public class SyncFragment extends Fragment {
                     }
                     catch (Exception err){
                         err.printStackTrace();
-                        dowloadFileErrors += 1;
+                        downloadFileErrors += 1;
                         downloadInfosNext();
                     }
 
@@ -657,19 +702,19 @@ public class SyncFragment extends Fragment {
                 @Override
                 public void error(String error) {
                     frag.log(error);
-                    dowloadFileErrors += 1;
+                    downloadFileErrors += 1;
                     downloadInfosNext();
                 }
             }
         );
 
-        dowloadFileIndex += 1;
+        downloadFileIndex += 1;
     }
 
     private void downloadNext(){
         if(getMemoryBooks() == null){ return; }
-        if(downloadList.size() <= 0){ return; }
-        JSONObject file = downloadListFiles.get(dowloadFileIndex);
+        if(downloadListFiles.size() <= 0){ return; }
+        JSONObject file = downloadListFiles.get(downloadFileIndex);
         try{
             client.Download(
                 "https://" + Host + ":" + Port + "/book/file/"+file.getString("book")+"/"+file.getString("file"),
@@ -677,8 +722,8 @@ public class SyncFragment extends Fragment {
                 new CallBack() {
                     @Override
                     public void run(String body, String header) {
-                        dowloadFileIndex += 1;
-                        downloadDialog.setMessage(""+ dowloadFileIndex +" / "+downloadList.size());
+                        downloadFileIndex += 1;
+                        downloadDialog.setMessage(""+ downloadFileIndex +" / "+downloadListFiles.size());
                         String[] tab = header.split("<>");
                         String[] taburl = tab[0].split("/");
                         String bookId = taburl[taburl.length - 2];
@@ -717,12 +762,12 @@ public class SyncFragment extends Fragment {
                             catch (Exception err){ err.printStackTrace(); }
                         }
                         else{
-                            dowloadFileErrors += 1;
+                            downloadFileErrors += 1;
                             Storage.deleteFile(tab[1]);
                         }
-                        if(dowloadFileIndex >= downloadList.size()){
+                        if(downloadFileIndex >= downloadListFiles.size()){
                             downloadDialog.dismiss();
-                            if(dowloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ dowloadFileErrors), Toast.LENGTH_LONG).show(); }
+                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
                             else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
                         }
                         else{ downloadNext(); }
@@ -730,11 +775,11 @@ public class SyncFragment extends Fragment {
                     @Override
                     public void error(String error) {
                         frag.log(error);
-                        dowloadFileIndex += 1;
-                        dowloadFileErrors += 1;
-                        if(dowloadFileIndex >= downloadList.size()){
+                        downloadFileIndex += 1;
+                        downloadFileErrors += 1;
+                        if(downloadFileIndex >= downloadListFiles.size()){
                             downloadDialog.dismiss();
-                            if(dowloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ dowloadFileErrors), Toast.LENGTH_LONG).show(); }
+                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
                             else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
                         }
                         else{ downloadNext(); }
@@ -743,15 +788,100 @@ public class SyncFragment extends Fragment {
             );
         }
         catch (Exception err){
-            dowloadFileIndex += 1;
-            dowloadFileErrors += 1;
-            if(dowloadFileIndex >= downloadList.size()){
+            downloadFileIndex += 1;
+            downloadFileErrors += 1;
+            if(downloadFileIndex >= downloadListFiles.size()){
                 downloadDialog.dismiss();
-                if(dowloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ dowloadFileErrors), Toast.LENGTH_LONG).show(); }
+                if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
                 else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
             }
             else{ downloadNext(); }
         }
+    }
+
+    public void UploadSelection(){
+        if(getMemoryBooks() == null){ return; }
+        uploadListBooks = new ArrayList<String>();
+        uploadFileIndex = 0;
+        uploadFileCount = 0;
+        uploadFileErrors = 0;
+        int cp = mainLayout.getChildCount();
+        for(int i = 0; i<cp; i++){
+            int idbox = mainLayout.getChildAt(i).getLabelFor();
+            Log.d("idbox", ""+idbox);
+            CheckBox chb = (CheckBox) root.findViewById(idbox);
+            if(chb.isChecked()){
+                try{
+                    if(booksIDS.contains(checkboxes.getString(""+idbox))){ 
+                        uploadListBooks.add(checkboxes.getString(""+idbox)); 
+                    }
+                }
+                catch (Exception err){}
+            }
+        }
+        Log.d("downloadList", ""+new Gson().toJson(uploadListBooks));
+        if(uploadListBooks.size() != 0){
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.dialog_upload_info_title);
+            builder.setMessage("0 / "+uploadListBooks.size());
+            downloadDialog = builder.create();
+            downloadDialog.show();
+
+            UploadSelectionNext();
+        }
+    }
+
+    public void UploadSelectionNext(){
+        try{
+            JSONObject membook = getMemoryBookInfo(uploadListBooks.get(uploadFileIndex));
+            if(membook == null){
+                downloadDialog.dismiss();
+                return;
+            }
+            for(JSONObject book : currentBooks){
+                if(book.getString("guid").equals(uploadListBooks.get(uploadFileIndex))){
+                    if(membook == null){
+
+                    }
+                    else{
+                        String tags = book.getString("tags").trim()
+                                .replace("\r", "").replace("\n", ";");
+                        if(tags.equals("null")){ tags = ""; }
+                        JSONObject obj = new JSONObject();
+                        obj.put("title", book.getString("title"));
+                        obj.put("authors", book.getString("authors"));
+                        obj.put("series", book.getString("series"));
+                        obj.put("series_vol", book.getString("series_vol"));
+                        obj.put("tags", tags);
+                        obj.put("synopsis", book.getString("synopsis"));
+                        obj.put("cover", book.getString("cover"));
+                        client.Post(
+                            "https://" + Host + ":" + Port + "/update/book/" + uploadListBooks.get(uploadFileIndex),
+                            obj.toString(),
+                            new CallBack() {
+                                @Override
+                                public void run(String body, String header) {
+                                    Log.e("UploadSelectionNext", body);
+                                    uploadFileIndex += 1;
+                                    downloadDialog.setMessage(""+uploadFileIndex+" / "+uploadListBooks.size());
+                                    UploadSelectionNext();
+                                }
+
+                                @Override
+                                public void error(String error) {
+                                    Log.e("UploadSelectionNext", error);
+                                    uploadFileIndex += 1;
+                                    uploadFileErrors += 1;
+                                    UploadSelectionNext();
+                                }
+                            }
+                        );
+                    }
+                    break;
+                }
+            }
+        }
+        catch (Exception err){ err.printStackTrace(); }
     }
 
 

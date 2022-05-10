@@ -28,6 +28,7 @@
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_checkbox_on.xml" value="0.33" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_default_cover.xml" value="0.21" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_dots_black.xml" value="0.21" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_download.xml" value="0.2255" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_empty.xml" value="0.2255" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_home.xml" value="0.236" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2095" />
@@ -39,6 +40,8 @@
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_menu_slideshow.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_more.xml" value="0.2255" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_more_vertical.xml" value="0.236" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_save.xml" value="0.2255" />
+        <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_sd_storage.xml" value="0.2255" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_settings.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_status_close.xml" value="0.2095" />
         <entry key="..\:/CODES/Android/eReader2/app/src/main/res/drawable/ic_status_open.xml" value="0.2095" />

@@ -181,6 +181,23 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         return ret;
     }
 
+    public List<String> getBooksIds(){
+        List<String> rez = new ArrayList<String>();
+
+        String query = "SELECT guid FROM books ORDER BY guid ASC";
+        Cursor cur = this.getReadableDatabase().rawQuery(query, new String[]{});
+        if(cur == null || cur.getCount() == 0){ return rez; }
+        else{
+            cur.moveToFirst();
+            boolean end = false;
+            while(end == false && cur.getCount() != 0){
+                if(cur.isLast()){end = true;}
+                rez.add(cur.getString(cur.getColumnIndex("guid")));
+                cur.moveToNext();
+            }
+            return rez;
+        }
+    }
     public List<JSONObject> getBooks(){ return getBooks(null, null, null); }
     public List<JSONObject> getBooks(String id){ return getBooks(id, null, null); }
     public List<JSONObject> getBooks(String id, String search){ return getBooks(id, search, null); }
@@ -420,6 +437,68 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             err.printStackTrace();
         }
         return false;
+    }
+
+    public boolean updateBookTitle(String book_id, String title){
+        Log.e("updateBook", "Title");
+        String query = "UPDATE books SET title = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ title, ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateBookAuthors(String book_id, String authors){
+        Log.e("updateBook", "Authors");
+        String query = "UPDATE books SET authors = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ authors, ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateBookSeries(String book_id, String series_name, double series_vol){
+        Log.e("updateBook", "Series");
+        String query = "UPDATE books SET series = ?, series_vol = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ series_name, ""+series_vol, ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateBookTags(String book_id, String[] tags){
+        Log.e("updateBook", "Tags");
+        String query = "UPDATE books SET tags = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ String.join(";", tags), ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateBookSynopsis(String book_id, String synopsis){
+        Log.e("updateBook", "Synopsis");
+        String query = "UPDATE books SET synopsis = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ synopsis, ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateBookCover(String book_id, String cover){
+        Log.e("updateBook", "Cover");
+        Log.e("Cover", ""+cover);
+        String query = "UPDATE books SET cover = ?, last_update_date = ? WHERE guid = ?";
+        try{ this.getWritableDatabase().execSQL(query, new String[]{ cover, ""+Integer.parseInt(""+(System.currentTimeMillis() / 1000)), book_id }); return true; }
+        catch (Exception err){
+            Log.e("ERROR", err.getMessage());
+            err.printStackTrace();
+            return false;
+        }
     }
 
     public void eraseProgression(String bookID, String fileID) {

@@ -1,7 +1,11 @@
 package lordkbx.workshop.ereader;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -30,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Comparator;
 
 public class utils {
     public static final int TAG_BOOKCASE_TEXTVIEW = 66500;
@@ -89,6 +94,19 @@ public class utils {
         return ret;
     }
 
+    public static Drawable getRotateDrawable(final Drawable d, final float angle) {
+        final Drawable[] arD = { d };
+        return new LayerDrawable(arD) {
+            @Override
+            public void draw(final Canvas canvas) {
+                canvas.save();
+                canvas.rotate(angle, d.getBounds().width() / 2, d.getBounds().height() / 2);
+                super.draw(canvas);
+                canvas.restore();
+            }
+        };
+    }
+
     private static int lastid = 24999;
     private static JSONObject checkboxes = new JSONObject();
     public static void resetCheckboxesArray(){ checkboxes = new JSONObject(); }
@@ -102,6 +120,8 @@ public class utils {
         if(displayMetrics.widthPixels > displayMetrics.heightPixels){ width = displayMetrics.heightPixels; }
         int wi = (int) Math.round(width / 3) - 40;
         int hi = (int) Math.round(wi * 1.333);
+        float multiplier = wi / 250.0f;
+        Log.e("multiplier", ""+multiplier);
         LinearLayout ll0 = new LinearLayout(context);
         ll0.setOrientation(LinearLayout.VERTICAL);
         ll0.setBackgroundResource(R.drawable.ic_default_cover);
@@ -111,53 +131,58 @@ public class utils {
         lastid += 1;
         if(lastid > Integer.MAX_VALUE){lastid = 25000;}
         ll0.setId(lastid);
+        ll0.setTooltipText(title);
 
         LinearLayout ll1 = new LinearLayout(context);
         ll1.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(lp0.width, 70);
+        int w70 = Math.round(70 * multiplier);
+        LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, w70);
         lp1.setMargins(0,0,0,0);
         ll1.setLayoutParams(lp1);
         Space sp1 = new Space(context);
-        LinearLayout.LayoutParams slp1 = new LinearLayout.LayoutParams(wi - 70, 70);
+        LinearLayout.LayoutParams slp1 = new LinearLayout.LayoutParams(wi - w70, w70);
         sp1.setLayoutParams(slp1);
         ll1.addView(sp1);
         if(onPhone){
             ImageView iv1 = new ImageView(context);
-            iv1.setImageResource(R.drawable.ic_sd_storage);
-            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(70, 60);
-            ilp.setMargins(0,10,0,0);
+            iv1.setImageResource(R.drawable.ic_save);
+            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(w70, w70);
+            ilp.setMargins(0,0,0,0);
             iv1.setLayoutParams(ilp);
+            iv1.setForegroundGravity(Gravity.RIGHT);
             ll1.addView(iv1);
         }
 
         LinearLayout ll2 = new LinearLayout(context);
         ll2.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(lp0.width, hi - 150);
+        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(lp0.width, hi - Math.round(150 * multiplier));
         lp2.setMargins(0,0,0,0);
         ll2.setLayoutParams(lp2);
         TextView tv = new TextView(context);
         tv.setMinimumWidth(wi);
-        tv.setPadding(15, 15, 15, 15);
+        tv.setPadding(Math.round(15 * multiplier), Math.round(15 * multiplier), Math.round(15 * multiplier), Math.round(15 * multiplier));
         tv.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
         tv.setText(title);
         tv.setTag(TAG_BOOKCASE_TEXTVIEW);
+        tv.setTextSize(12*multiplier);
         ll2.addView(tv);
 
         LinearLayout ll3 = new LinearLayout(context);
         ll3.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(lp0.width, 80);
+        LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(lp0.width, Math.round(80 * multiplier));
         lp3.setMargins(0,0,0,0);
         ll3.setLayoutParams(lp3);
+        ll3.setPadding(0, 0, 0, 5);
 
         Button bt = new Button(context, null, R.style.Theme_EReader_VoidButton);
-        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(75, 75);
-        blp.setMargins(0,0,0,5);
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(Math.round(75 * multiplier), Math.round(75 * multiplier));
+        blp.setMargins(0,0,0,0);
         bt.setLayoutParams(blp);
         bt.setPadding(0, 0, 0, 0);
         bt.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
         Drawable dr = AppCompatResources.getDrawable(context, R.drawable.ic_more );
+        dr = getRotateDrawable(dr, 90.0f);
         bt.setBackground(dr);
-        bt.setRotation(90);
         lastid += 1;
         if(lastid > Integer.MAX_VALUE){lastid = 25000;}
         bt.setId(lastid);
@@ -185,21 +210,21 @@ public class utils {
             }
         });
         context.registerForContextMenu(bt);
-
-        Space sp2 = new Space(context);
-        LinearLayout.LayoutParams slp2 = new LinearLayout.LayoutParams(wi - 80 - 120, 70);
-        sp2.setLayoutParams(slp2);
-
         ll3.addView(bt);
-        ll3.addView(sp2);
 
         if(checkable){
+            Space sp2 = new Space(context);
+            LinearLayout.LayoutParams slp2 = new LinearLayout.LayoutParams(lp0.width - Math.round(150 * multiplier), w70);
+            sp2.setLayoutParams(slp2);
+            ll3.addView(sp2);
+
             CheckBox cb = new CheckBox(context);
-            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(120, 71);
-            clp.setMargins(0,0,0,10);
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(Math.round(120 * multiplier), Math.round(75 * multiplier));
+            clp.setMargins(0,0,0, 0);
             cb.setLayoutParams(clp);
             cb.setPadding(0,0,0,0);
             cb.setButtonDrawable(R.drawable.checkbox_selector);
+            cb.setTextSize(0);
             lastid += 1;
             if(lastid > Integer.MAX_VALUE){lastid = 25000;}
             cb.setId(lastid);
@@ -248,3 +273,4 @@ public class utils {
         return ll0;
     }
 }
+

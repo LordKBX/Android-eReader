@@ -57,7 +57,7 @@
     <!-- Sync -->
     <string name="sync_loading">Loading ...</string>
     <string name="sync_btn_download">Download selection</string>
-    <string name="sync_btn_delete">Delete selection from storage</string>
+    <string name="sync_btn_upload">Upload selection</string>
     <string name="sync_btn_refresh">Reload list</string>
     <string name="sync_message_download_end_ok">Download Complete</string>
     <string name="sync_message_download_end_error">Download Ended, [X] Error(s)</string>
@@ -82,4 +82,9 @@
     <string name="reader_btn_negatif">Négatif</string>
     <string name="reader_btn_toc">Table des matières</string>
     <string name="reader_btn_zoom_reset">Reset zoom</string>
+    <string name="sync_confirm_replace_title">Warning</string>
+    <string name="sync_confirm_replace_message">Some books are already on device. Do you confirm replacing already existing files ?</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
+    <string name="dialog_upload_info_title">Upload books data</string>
 </resources>

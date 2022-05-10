@@ -7,9 +7,9 @@
         android:icon="@drawable/ic_download" app:showAsAction="ifRoom"
         />
     <item
-        android:id="@+id/sync_menu_delete"
-        android:title="@string/sync_btn_delete"
-        android:icon="@drawable/ic_trash" app:showAsAction="ifRoom"
+        android:id="@+id/sync_menu_upload"
+        android:title="@string/sync_btn_upload"
+        android:icon="@drawable/ic_upload" app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/sync_menu_refresh"

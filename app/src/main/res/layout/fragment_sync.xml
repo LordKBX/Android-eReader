@@ -96,7 +96,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:button="@drawable/checkbox_selector" />
+                            android:button="@drawable/checkbox_selector"
+                            android:textAlignment="gravity"
+                            android:textSize="0sp" />
                     </LinearLayout>
 
                 </LinearLayout>

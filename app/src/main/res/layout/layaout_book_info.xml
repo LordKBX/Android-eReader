@@ -130,10 +130,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:allowUndo="false"
                     android:ems="10"
-                    android:textSize="12sp"
+                    android:enabled="false"
                     android:gravity="start|top"
-                    android:inputType="textMultiLine" />
+                    android:inputType="textMultiLine"
+                    android:textSize="12sp" />
 
                 <lordkbx.workshop.ereader.ui.MultiSpinner
                     android:id="@+id/layout_book_info_spinner_tags"
