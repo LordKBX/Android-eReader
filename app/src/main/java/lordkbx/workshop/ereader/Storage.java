@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -202,6 +203,19 @@ public class Storage {
 
     public static boolean existFile(String path){
         try{ File file = new File(path); return file.exists(); }catch (Exception err){}
+        return false;
+    }
+
+    public static boolean writeTextFile(String path, String data){
+        try{
+            File file = new File(path);
+            if(!file.exists()){ file.createNewFile(); }
+            FileWriter myWriter = new FileWriter(path);
+            myWriter.write(data);
+            myWriter.close();
+            return true;
+        }
+        catch (Exception err){}
         return false;
     }
 

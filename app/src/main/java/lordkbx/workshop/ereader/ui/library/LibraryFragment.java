@@ -71,7 +71,7 @@ public class LibraryFragment extends Fragment {
                 reader.putExtra(EXTRA_MESSAGE1, data.get(1));
                 reader.putExtra(EXTRA_MESSAGE2, data.get(3));
                 reader.putExtra(EXTRA_MESSAGE3, data.get(4));
-                reader.putExtra(EXTRA_MESSAGE4, parent.getIntent());
+                reader.putExtra(EXTRA_MESSAGE4, data.get(0));
 
                 Handler mHandler=new Handler();
                 mHandler.postDelayed(new Runnable() {

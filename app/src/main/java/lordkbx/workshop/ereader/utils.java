@@ -55,22 +55,24 @@ public class utils {
     }
 
     public static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader reader = new BufferedReader(isr);
         StringBuilder sb = new StringBuilder();
         String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
+        while ((line = reader.readLine()) != null) { sb.append(line).append("\n"); }
         reader.close();
+        isr.close();
         return sb.toString();
     }
 
-    public static String getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        //Make sure you close all streams.
-        fin.close();
+    public static String getStringFromFile (String filePath){
+        String ret = "";
+        try{
+            FileInputStream fin = new FileInputStream(filePath);
+            ret = convertStreamToString(fin);
+            fin.close();
+        }
+        catch (Exception err){}
         return ret;
     }
 
@@ -78,7 +80,6 @@ public class utils {
         String[] Tbase64 = base64.split(",");
         base64 = Tbase64[Tbase64.length - 1];
         Drawable ret = null;
-        Log.e("decodeDrawable", "");
         if (!base64.equals("")) {
             ByteArrayInputStream bais = new ByteArrayInputStream(
                     Base64.decode(base64.getBytes(), Base64.DEFAULT));
@@ -121,7 +122,7 @@ public class utils {
         int wi = (int) Math.round(width / 3) - 40;
         int hi = (int) Math.round(wi * 1.333);
         float multiplier = wi / 250.0f;
-        Log.e("multiplier", ""+multiplier);
+        //Log.e("multiplier", ""+multiplier);
         LinearLayout ll0 = new LinearLayout(context);
         ll0.setOrientation(LinearLayout.VERTICAL);
         ll0.setBackgroundResource(R.drawable.ic_default_cover);

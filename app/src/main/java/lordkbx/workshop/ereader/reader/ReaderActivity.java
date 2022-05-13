@@ -43,11 +43,16 @@ import java.util.Map;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import lordkbx.workshop.ereader.MainDrawerActivity;
 import lordkbx.workshop.ereader.R;
 import lordkbx.workshop.ereader.Storage;
 import lordkbx.workshop.ereader.night;
 import lordkbx.workshop.ereader.ui.library.LibraryFragment;
+import lordkbx.workshop.ereader.utils;
+import nl.siegmann.epublib.domain.Author;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.TOCReference;
@@ -226,52 +231,66 @@ public class ReaderActivity extends AppCompatActivity{
 
         mContentView.getSettings().setAllowFileAccess(true);
 
-        //clear cache dir
         File directory = new File(  Storage.getAppCachePath("tmp_reader") + "/" + guidC);
-        Files.deleteRecursive(directory);
-        directory.mkdirs();
-        Storage.deleteDirectoryContent(directory.getAbsolutePath());
+        //Files.deleteRecursive(directory);
+        try{ directory.mkdirs(); } catch (Exception err){}
+        //Storage.deleteDirectoryContent(directory.getAbsolutePath());
         List<String> files = null;
+        String fileHash = Storage.fileHash(message).trim();
+        Log.e("fileHash =", fileHash);
+        Storage.existFile(directory.getAbsolutePath() + "/HASH");
+        boolean cached = false;
+        if(Storage.existFile(directory.getAbsolutePath() + "/HASH")){
+            String storedHash = "";
+            try{ storedHash = utils.getStringFromFile(directory.getAbsolutePath() + "/HASH").trim(); }
+            catch (Exception err){}
+            Log.e("storedHash =", storedHash);
+            if(storedHash.equals(fileHash)){ cached = true; }
+            else{ Storage.deleteDirectoryContent(directory.getAbsolutePath()); }
+        }
+        Log.e("cached =", (cached)?"true":"false");
 
         if(message.toLowerCase().endsWith(".pdf")){// create a new renderer
             try{
                 viewMode = "CBZ";
-                File file = new File(message);
-                Uri uri = Uri.fromFile(file);
-                Log.d("DEBUG_APP", "test uri = "+uri);
-                PdfRenderer renderer = new PdfRenderer(getContentResolver().openFileDescriptor(uri, "r"));
-                Log.d("DEBUG_APP", "PdfRenderer loaded "+renderer.toString());
+                if(!cached){
+                    File file = new File(message);
+                    Uri uri = Uri.fromFile(file);
+                    Log.d("DEBUG_APP", "test uri = "+uri);
+                    PdfRenderer renderer = new PdfRenderer(getContentResolver().openFileDescriptor(uri, "r"));
+                    Log.d("DEBUG_APP", "PdfRenderer loaded "+renderer.toString());
 
-                // let us just render all pages
-                final int pageCount = renderer.getPageCount();
-                Log.d("DEBUG_APP", "PdfRenderer cout "+pageCount);
-                for (int i = 0; i < pageCount; i++) {
-                    String fileEnd = directory.getAbsolutePath() + "/" + "page";
-                    if(i < 1000){
-                        if(i < 100){
-                            if(i < 10){ fileEnd = fileEnd + "000" + i; }
-                            else{ fileEnd = fileEnd + "00" + i; }
+                    // let us just render all pages
+                    final int pageCount = renderer.getPageCount();
+                    Log.d("DEBUG_APP", "PdfRenderer cout "+pageCount);
+                    for (int i = 0; i < pageCount; i++) {
+                        String fileEnd = directory.getAbsolutePath() + "/" + "page";
+                        if(i < 1000){
+                            if(i < 100){
+                                if(i < 10){ fileEnd = fileEnd + "000" + i; }
+                                else{ fileEnd = fileEnd + "00" + i; }
+                            }
+                            else{ fileEnd = fileEnd + "0" + i; }
                         }
-                        else{ fileEnd = fileEnd + "0" + i; }
+                        else{ fileEnd = fileEnd + "" + i; }
+                        fileEnd = fileEnd + ".png";
+                        PdfRenderer.Page page = renderer.openPage(i);
+                        Bitmap mBitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
+                        // say we render for showing on the screen
+                        page.render(mBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                        FileOutputStream fileOuputStream = new FileOutputStream(fileEnd);
+                        mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOuputStream);
+                        fileOuputStream.close();
+
+                        // do stuff with the bitmap
+
+                        // close the page
+                        page.close();
                     }
-                    else{ fileEnd = fileEnd + "" + i; }
-                    fileEnd = fileEnd + ".png";
-                    PdfRenderer.Page page = renderer.openPage(i);
-                    Bitmap mBitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
-                    // say we render for showing on the screen
-                    page.render(mBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-                    FileOutputStream fileOuputStream = new FileOutputStream(fileEnd);
-                    mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOuputStream);
-                    fileOuputStream.close();
 
-                    // do stuff with the bitmap
-
-                    // close the page
-                    page.close();
+                    // close the renderer
+                    renderer.close();
                 }
-
-                // close the renderer
-                renderer.close();
             }
             catch (FileNotFoundException error){ Log.d("DEBUG_APP", "File not found"); }
             catch (IOException error){ Log.d("DEBUG_APP", "File not found(IOException)"); }
@@ -280,17 +299,19 @@ public class ReaderActivity extends AppCompatActivity{
         if(message.toLowerCase().endsWith(".cbz") || message.toLowerCase().endsWith(".epub") || message.toLowerCase().endsWith(".epub2") || message.toLowerCase().endsWith(".epub3")){
             if(message.toLowerCase().endsWith(".cbz")){ viewMode = "CBZ"; }
             else{ viewMode = "EPUB"; }
-
-            try{
-                Log.d("DEBUG_APP", "Before unzip");
-                Unzip.UnzipFile(message, directory);
-                Log.d("DEBUG_APP", "after unzip");
-            }
-            catch (IOException error){
-                Log.d("DEBUG_APP", "UNZIP ERROR => "+error.getMessage());
+            if(!cached){
+                try{
+                    Log.e("DEBUG_APP", "Before unzip");
+                    Unzip.UnzipFile(message, directory);
+                    Log.e("DEBUG_APP", "after unzip");
+                }
+                catch (IOException error){
+                    Log.d("DEBUG_APP", "UNZIP ERROR => "+error.getMessage());
+                }
             }
         }
         eBookObj.setViewMode(viewMode);
+        Storage.writeTextFile(directory.getAbsolutePath() + "/HASH", fileHash);
 
         if(viewMode.equals("CBZ")){
             String block = "<div class=\"block\"><img src=\"{URI}\"/></div>";
@@ -330,73 +351,118 @@ public class ReaderActivity extends AppCompatActivity{
                     "text/html", "utf-8",null
             );
         }
-        else if(viewMode.equals("EPUB")){
-            String lang = "";
+        else if(viewMode.equals("EPUB")) {
             String guid = guidC;
             String title = "";
-            String authors = "";
-            String cover_path = "";
-            List<String> tags = new ArrayList<String>();
             String subDir = "";
+            JSONArray tocList = new JSONArray();
+            String READER_CACHE_INFO_FILE = directory.getAbsolutePath() + "/READER_CACHE_INFO.JSON";
 
-            try {
-                // find InputStream for book
-                InputStream epubInputStream = new FileInputStream(message);
-                // Load Book from inputStream
-                Book book = (new EpubReader()).readEpub(epubInputStream);
+            if (!cached || !Storage.existFile(READER_CACHE_INFO_FILE)) {
+                try {
+                    // find InputStream for book
+                    InputStream epubInputStream = new FileInputStream(message);
+                    // Load Book from inputStream
+                    Book book = (new EpubReader()).readEpub(epubInputStream);
+                    title = book.getTitle();
+                    setTitle(title);
 
-                authors = book.getMetadata().getAuthors().toString();
-                title = book.getTitle();
-                lang = book.getMetadata().getLanguage();
-                cover_path = book.getCoverPage().getHref();
-                tags = book.getMetadata().getSubjects();
+                    // Log the book's authors
+                    Log.i("epublib", "author(s): " + book.getMetadata().getAuthors());
 
-                setTitle(title);
+                    // Log the book's title
+                    Log.i("epublib", "title: " + book.getTitle());
 
-                // Log the book's authors
-                Log.i("epublib", "author(s): " + book.getMetadata().getAuthors());
+                    List<Resource> lr = book.getContents();
+                    List<TOCReference> lt = book.getTableOfContents().getTocReferences();
+                    String dataS = new Gson().toJson(lr);
 
-                // Log the book's title
-                Log.i("epublib", "title: " + book.getTitle());
+                    /*
+                    FileWriter fw = new FileWriter(Storage.getAppCachePath("debug") + "/book_content.txt");
+                    fw.append(dataS);
+                    fw.close();
+                    */
 
-                List<Resource> lr = book.getContents();
-                List<TOCReference> lt = book.getTableOfContents().getTocReferences();
-                String dataS = new Gson().toJson(lr);
-
-                /*
-                FileWriter fw = new FileWriter(Storage.getAppCachePath("debug") + "/book_content.txt");
-                fw.append(dataS);
-                fw.close();
-                */
-
-                String[] tabOpfPath = book.getOpfResource().getHref().replace(directory.getAbsolutePath(), "").split("/");
-                if(tabOpfPath.length > 1){
-                    for(String section : tabOpfPath){
-                        if(section.toLowerCase().endsWith(".opf")){ break; }
-                        if(!subDir.equals("")){ subDir += "/"; }
-                        subDir += section;
-                    }
-                    subDir += "/";
-                }
-                Log.e("subDir = ", ""+subDir);
-
-                for(int i=0; i<lr.size(); i++){
-                    String data = Files.fileToString(directory.getAbsolutePath() + "/" + subDir + lr.get(i).getHref());
-                    //data = data.replace("<head>", "<head><base href=\"file://" + directory.getAbsolutePath() + "/" + subDir + "\"/>");
-                    boolean hidden = true;
-                    String title2 = lr.get(i).getTitle();
-                    for(int j=0; j<lt.size(); j++){
-                        if(lt.get(j).getResourceId() == lr.get(i).getId()){
-                            hidden = false;
-                            title2 = lt.get(j).getTitle();
-                            break;
+                    String[] tabOpfPath = book.getOpfResource().getHref().replace(directory.getAbsolutePath(), "").split("/");
+                    if (tabOpfPath.length > 1) {
+                        for (String section : tabOpfPath) {
+                            if (section.toLowerCase().endsWith(".opf")) {
+                                break;
+                            }
+                            if (!subDir.equals("")) {
+                                subDir += "/";
+                            }
+                            subDir += section;
                         }
+                        subDir += "/";
                     }
-                    eBookObj.addToc(lr.get(i).getId(), directory.getAbsolutePath() + "/" + subDir + lr.get(i).getHref(), title2, data, hidden);
-                }
+                    Log.e("subDir = ", "" + subDir);
 
-            } catch (IOException e) {
-                Log.e("epublib", e.getMessage());
+                    String contentDirectory = directory.getAbsolutePath() + "/" + subDir;
+                    for (int i = 0; i < lr.size(); i++) {
+                        String data = Files.fileToString(contentDirectory + lr.get(i).getHref());
+                        //data = data.replace("<head>", "<head><base href=\"file://" + directory.getAbsolutePath() + "/" + subDir + "\"/>");
+                        boolean hidden = true;
+                        String title2 = lr.get(i).getTitle();
+                        for (int j = 0; j < lt.size(); j++) {
+                            if (lt.get(j).getResourceId() == lr.get(i).getId()) {
+                                hidden = false;
+                                title2 = lt.get(j).getTitle();
+                                break;
+                            }
+                        }
+                        if(title2 == null){ title2 = ""; }
+                        JSONObject jo = new JSONObject();
+                        try {
+                            jo.put("id", lr.get(i).getId());
+                            jo.put("href", contentDirectory + lr.get(i).getHref());
+                            jo.put("title2", title2);
+                            jo.put("hidden", hidden);
+                        } catch (Exception err) {
+                        }
+                        tocList.put(jo);
+                        eBookObj.addToc(lr.get(i).getId(), contentDirectory + lr.get(i).getHref(), title2, data, hidden);
+                    }
+                }
+                catch (IOException e) {
+                    Log.e("epublib", e.getMessage());
+                }
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("guid", guid);
+                    jo.put("title", title);
+                    jo.put("tocList", tocList);
+
+                    Storage.writeTextFile(READER_CACHE_INFO_FILE, jo.toString());
+                }
+                catch (Exception err) {
+                }
+            }
+            else{
+                String cache_data = utils.getStringFromFile(READER_CACHE_INFO_FILE);
+                Log.e("cache_data", ""+cache_data);
+                try{
+                    JSONObject obj = new JSONObject(cache_data);
+                    guid = obj.getString("guid");
+                    title = obj.getString("title");
+                    tocList = obj.getJSONArray("tocList");
+                    setTitle(title);
+
+                    for (int i = 0; i < tocList.length(); i++) {
+                        Log.e("TOC LINE", ""+i);
+                        JSONObject line = tocList.getJSONObject(i);
+                        String data = Files.fileToString(line.getString("href"));
+                        //data = data.replace("<head>", "<head><base href=\"file://" + directory.getAbsolutePath() + "/" + subDir + "\"/>");
+                        eBookObj.addToc(line.getString("id"), line.getString("href"),
+                                line.getString("title2"), data, line.getBoolean("hidden"));
+                    }
+                }
+                catch (Exception err){
+                    Log.e("ERROR", "Unable to read "+READER_CACHE_INFO_FILE);
+                    Log.e("ERROR", err.getMessage());
+                    Storage.deleteFile(READER_CACHE_INFO_FILE);
+                    finish();
+                }
             }
 
             //Log.d("DEBUG_APP", "page => " + page);
