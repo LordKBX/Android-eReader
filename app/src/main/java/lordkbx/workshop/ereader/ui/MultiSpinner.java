@@ -150,6 +150,10 @@ public class MultiSpinner extends androidx.appcompat.widget.AppCompatSpinner imp
         setAdapter(adapter);
     }
 
+    public void unselectAll(){
+        for (int i = 0; i < selected.length; i++){ selected[i] = false; }
+    }
+
     public interface MultiSpinnerListener {
         public void onItemsSelected(boolean[] selected);
     }

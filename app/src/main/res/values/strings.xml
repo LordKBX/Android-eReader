@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">eReader</string>
     <string name="nav_header_title">eReader</string>
-    <string name="nav_header_subtitle">lordkbx.workshop@gmail.com</string>
+    <string name="nav_header_subtitle">Version X</string>
     <string name="nav_header_desc">Navigation header</string>
 
     <string name="menu_home">Home</string>
@@ -61,14 +61,21 @@
     <string name="sync_btn_refresh">Reload list</string>
     <string name="sync_message_download_end_ok">Download Complete</string>
     <string name="sync_message_download_end_error">Download Ended, [X] Error(s)</string>
+    <string name="sync_message_error_server_access">Unable to contact server</string>
+    <string name="sync_message_error_login">Login Failled</string>
+    <string name="sync_message_error_processing_data">Error in data parsing</string>
 
     <!-- Dialog -->
     <string name="dialog_ok">OK</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
+    <string name="dialog_close">Close</string>
     <string name="dialog_download_title">Downloading books ...</string>
     <string name="dialog_get_info_title">Loading books files info ...</string>
     <string name="dialog_loading">Loading ...</string>
+    <string name="dialog_upload_info_title">Upload books data</string>
 
     <!-- Dialog Book Info -->
     <string name="dialog_book_info_title">Title</string>
@@ -84,7 +91,4 @@
     <string name="reader_btn_zoom_reset">Reset zoom</string>
     <string name="sync_confirm_replace_title">Warning</string>
     <string name="sync_confirm_replace_message">Some books are already on device. Do you confirm replacing already existing files ?</string>
-    <string name="dialog_yes">Yes</string>
-    <string name="dialog_no">No</string>
-    <string name="dialog_upload_info_title">Upload books data</string>
 </resources>

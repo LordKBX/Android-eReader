@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.FileUtils;
 import android.os.Message;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -271,19 +272,29 @@ public class SyncFragment extends Fragment {
 
     private List<JSONObject> currentBooks;
     private List<String> booksIDS;
+    private ArrayMap<String, Integer> tags = new ArrayMap<String, Integer>();
+    List<JSONObject> jlist = new ArrayList<JSONObject>();
 
     @Override
     public void onResume() {
         super.onResume();
-        try{ ((MainDrawerActivity)this.getActivity()).showBottomBar(); } catch (Exception err){}
+        MainDrawerActivity activity = null;
+        try{
+            activity = (MainDrawerActivity)this.getActivity();
+            activity.showBottomBar();
+            activity.setFragmentName("Sync");
+        }
+        catch (Exception err){}
         updateMemorySize();
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        if(activity != null){
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     public void log(String message){ Log.d("DEBUG_APP", ""+message); }
@@ -357,15 +368,22 @@ public class SyncFragment extends Fragment {
                         public void run(String body, String header) {
                             mainLayout.removeAllViews();
                             try{
+                                tags = new ArrayMap<String, Integer>();
                                 utils.resetCheckboxesArray();
                                 checkboxes = new JSONObject();
                                 dataBooks = (JSONObject) new JSONTokener(body).nextValue();
+                                if(dataBooks.getInt("SessionStatus") != 1){
+                                    errorScreen(getResources().getString(R.string.sync_message_error_login));
+                                    return;
+                                }
                                 dataBooksFiles = new JSONObject();
                                 dataBooksCovers = new JSONObject();
                                 layoutList = new JSONObject();
                                 Log.d("API, OBJECT DATA TYPE", dataBooks.get("Data").getClass().getName());
                                 if(dataBooks.get("Data").getClass().getName().equals("org.json.JSONArray")){
                                     JSONArray list = (JSONArray) dataBooks.get("Data");
+                                    jlist = new ArrayList<JSONObject>();
+                                    for(int i=0; i<list.length(); i++){ jlist.add(list.getJSONObject(i)); }
 
                                     downloadFileIndex = 0;
                                     downloadFileCount = 0;
@@ -374,8 +392,18 @@ public class SyncFragment extends Fragment {
 
                                     for(int i=0; i<list.length(); i++){
                                         JSONObject book = (JSONObject)list.get(i);
+                                        jlist.add(book);
                                         String title = book.getString("title").trim();
                                         String serie = book.getString("series").trim();
+                                        String tagsString = book.getString("tags").trim();
+
+                                        String[] tagsTab = tagsString.split(";");
+                                        for(String tag : tagsTab){
+                                            if(tag == null || tag.trim().equals("") || tag.trim().equals("null")){ continue; }
+                                            if(!tags.containsKey(tag.trim())){ tags.put(tag.trim(), 1); }
+                                            else{ tags.replace(tag.trim(), tags.get(tag.trim()) + 1); }
+                                        }
+
                                         if (!serie.equals("") && !serie.equals("null")){ title = serie + " - " + title; }
                                         LinearLayout book_case = utils.bookCase(
                                             parent,
@@ -394,11 +422,15 @@ public class SyncFragment extends Fragment {
                                             BufferedReader br = new BufferedReader(new FileReader(file));
                                             while ((line = br.readLine()) != null) { cover += line; }
                                             br.close();
+
+                                            jlist.get(i).put("cover", cover);
                                             utils.replaceBookCaseCover(book_case, cover);
                                             dataBooksCovers.put(book.getString("guid"), cover);
                                         }
                                         else{ downloadListCovers.add(book.getString("guid")); }
                                     }
+                                    parent.setCurrentTags(tags);
+                                    parent.setSyncBooksList(jlist);
                                     loadCoverNext();
                                 }
                                 checkboxes = utils.getCheckboxesArray();
@@ -406,18 +438,20 @@ public class SyncFragment extends Fragment {
                             catch (Exception err){
                                 Log.e("get books", err.getMessage());
                                 err.printStackTrace();
+
+                                errorScreen(getResources().getString(R.string.sync_message_error_processing_data));
                             }
                         }
 
                         @Override
                         public void error(String error) {
-                            errorScreen(error);
+                            errorScreen(getResources().getString(R.string.sync_message_error_processing_data));
                         }
                     });
                 }
                 @Override
                 public void error(String error) {
-                    errorScreen(error);
+                    errorScreen(getResources().getString(R.string.sync_message_error_server_access));
                 }
             }
         );
@@ -454,10 +488,13 @@ public class SyncFragment extends Fragment {
         ll.setOrientation(LinearLayout.HORIZONTAL);
 
         ImageView iv = new ImageView(this.getContext());
-        iv.setImageResource(android.R.drawable.alert_light_frame);
+        iv.setImageResource(R.drawable.ic_empty);
+        iv.setMinimumHeight(200);
+        iv.setMaxHeight(200);
 
         TextView tv = new TextView(this.getContext());
         tv.setMinHeight(200);
+        tv.setMaxHeight(200);
         tv.setGravity(Gravity.CENTER_VERTICAL);
         tv.setText(message);
 
@@ -481,6 +518,15 @@ public class SyncFragment extends Fragment {
                         JSONObject data = (JSONObject) new JSONTokener(body).nextValue();
                         String cover = data.getString("Data");
                         dataBooksCovers.put(bookId, cover);
+
+                        for(int i = 0; i< jlist.size(); i++){
+                            if(jlist.get(i).getString("guid").equals(bookId)){
+                                jlist.get(i).put("cover", cover);
+                                parent.setSyncBooksList(jlist);
+                                break;
+                            }
+                        }
+
                         utils.replaceBookCaseCover(mainLayout.findViewById(layoutList.getInt(bookId)), cover);
 
                         FileWriter fw = new FileWriter(Storage.getAppCachePath("covers") + '/' + bookId);

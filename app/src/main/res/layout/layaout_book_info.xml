@@ -31,7 +31,8 @@
                 <ImageView
                     android:id="@+id/layout_book_info_cover"
                     android:layout_width="150dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_default_cover" />
 
                 <EditText
@@ -45,6 +46,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:orientation="vertical">
 
                     <TextView
@@ -57,7 +59,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:inputType="textPersonName"
+                        android:imeOptions="flagNoEnterAction"
+                        android:inputType="textMultiLine|textPersonName"
                         android:textSize="12sp" />
 
                     <TextView
@@ -70,7 +73,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:inputType="textPersonName"
+                        android:inputType="textMultiLine|textPersonName"
                         android:textSize="12sp" />
 
                     <Button
@@ -80,83 +83,120 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <LinearLayout
+            <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/layout_book_info_label_series"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical" />
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:minHeight="40dp">
 
-                <EditText
-                    android:id="@+id/layout_book_info_input_series_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:inputType="textPersonName"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/layout_book_info_label_series"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:maxWidth="80dp"
+                        android:minWidth="80dp" />
 
-                <EditText
-                    android:id="@+id/layout_book_info_input_series_number"
-                    android:layout_width="30dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:inputType="numberDecimal"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:minHeight="40dp"
+                        android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                        <EditText
+                            android:id="@+id/layout_book_info_input_series_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_weight="1"
+                            android:ems="10"
+                            android:imeOptions="flagNoEnterAction"
+                            android:inputType="textMultiLine|textPersonName"
+                            android:minHeight="40dp"
+                            android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/layout_book_info_label_tags"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical" />
+                        <EditText
+                            android:id="@+id/layout_book_info_input_series_number"
+                            android:layout_width="70dp"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_vertical"
+                            android:ems="10"
+                            android:foregroundGravity="center_vertical|center_horizontal"
+                            android:inputType="numberDecimal"
+                            android:maxWidth="30dp"
+                            android:minWidth="30dp"
+                            android:textAlignment="center"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </TableRow>
 
-                <EditText
-                    android:id="@+id/layout_book_info_input_tags"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:allowUndo="false"
-                    android:ems="10"
-                    android:enabled="false"
-                    android:gravity="start|top"
-                    android:inputType="textMultiLine"
-                    android:textSize="12sp" />
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:minHeight="40dp">
 
-                <lordkbx.workshop.ereader.ui.MultiSpinner
-                    android:id="@+id/layout_book_info_spinner_tags"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent" />
+                    <TextView
+                        android:id="@+id/layout_book_info_label_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:maxWidth="80dp"
+                        android:minWidth="80dp" />
 
-                <Button
-                    android:id="@+id/layout_book_info_button_tags_select"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/ic_group_expand_00"
-                    android:shadowColor="@color/black" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:minHeight="40dp"
+                        android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/layout_book_info_button_tags_clear"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:background="@drawable/ic_dialog_close_light"
-                    android:shadowColor="@color/black" />
+                        <EditText
+                            android:id="@+id/layout_book_info_input_tags"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:allowUndo="false"
+                            android:ems="10"
+                            android:enabled="false"
+                            android:gravity="start|top"
+                            android:inputType="textMultiLine"
+                            android:textSize="12sp" />
 
-            </LinearLayout>
+                        <lordkbx.workshop.ereader.ui.MultiSpinner
+                            android:id="@+id/layout_book_info_spinner_tags"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent" />
+
+                        <Button
+                            android:id="@+id/layout_book_info_button_tags_select"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginTop="2dp"
+                            android:background="@drawable/ic_group_expand_00"
+                            android:maxWidth="30dp"
+                            android:minWidth="30dp"
+                            android:shadowColor="@color/black" />
+
+                        <Button
+                            android:id="@+id/layout_book_info_button_tags_clear"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginTop="2dp"
+                            android:background="@drawable/ic_dialog_close_light"
+                            android:maxWidth="30dp"
+                            android:minWidth="30dp"
+                            android:shadowColor="@color/black" />
+
+                    </LinearLayout>
+                </TableRow>
+
+            </TableLayout>
 
             <Space
                 android:layout_width="match_parent"

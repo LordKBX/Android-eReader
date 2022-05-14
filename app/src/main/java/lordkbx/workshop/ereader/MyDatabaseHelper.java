@@ -418,6 +418,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             return false;
         }
     }
+
     public boolean deleteBook(String bookID){
         List<JSONObject> list = getBooks(bookID);
         try{
@@ -427,6 +428,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 Storage.deleteFile(file.getString("link"));
             }
             SQLiteDatabase database = this.getWritableDatabase();
+            database.execSQL("DELETE FROM favorites WHERE book_id = ?", new String[]{bookID});
             database.execSQL("DELETE FROM files WHERE book_id = ?", new String[]{bookID});
             database.execSQL("DELETE FROM books WHERE guid = ?", new String[]{bookID});
 

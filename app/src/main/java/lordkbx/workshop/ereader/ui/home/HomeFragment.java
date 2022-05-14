@@ -78,95 +78,108 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        try{ ((MainDrawerActivity)this.getActivity()).hideBottomBar(); } catch (Exception err){}
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                favoritesLayout.removeAllViews();
-                recentsLayout.removeAllViews();
-                List<JSONObject> books = parent.dbh.getBooks();
-                List<String> favoredBooks = parent.dbh.getFavorites();
-                List<String> recentBooks = parent.dbh.getMostRecentFiles();
-                utils.resetCheckboxesArray();
+        MainDrawerActivity activity = null;
+        try{
+            activity = (MainDrawerActivity)this.getActivity();
+            activity.hideBottomBar();
+            activity.setFragmentName("Home");
+        }
+        catch (Exception err){}
 
-                int cptFavs = 0;
-                int cptRecents = 0;
-                if(favoredBooks != null && favoredBooks.size() > 0){
-                    for(JSONObject book : books){
-                        Log.w("Book", new Gson().toJson(book));
-                        try{
-                            if(!favoredBooks.contains(book.getString("guid"))){ continue; }
-                            cptFavs += 1;
-                            JSONArray files = book.getJSONArray("files");
-                            LinearLayout Bcase = utils.bookCase(
-                                    parent,
-                                    favoritesLayout,
-                                    book.getString("guid"),
-                                    book.getString("title"),
-                                    false, true
-                            );
-                            utils.replaceBookCaseCover(Bcase, book.getString("cover"));
-                            ((CheckBox)Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
+        if(activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    favoritesLayout.removeAllViews();
+                    recentsLayout.removeAllViews();
+                    List<JSONObject> books = parent.dbh.getBooks();
+                    List<String> favoredBooks = parent.dbh.getFavorites();
+                    List<String> recentBooks = parent.dbh.getMostRecentFiles();
+                    utils.resetCheckboxesArray();
 
-                            List<String> data = new ArrayList<String>();
-                            data.add(book.getString("title") + "(" + files.getJSONObject(0).getString("format") + ")");
-                            data.add(files.getJSONObject(0).getString("link"));
-                            data.add("file");
-                            data.add(book.getString("guid"));
-                            data.add(((JSONObject)files.get(0)).getString("guid"));
-                            Bcase.setTag(data);
-                            Bcase.setOnClickListener(btnListener);
-
-                            favoritesLayout.addView(Bcase);
-                        }
-                        catch (Exception err){}
-                    }
-                }
-                if(cptFavs == 0){
-                    favoritesLayout.addView(utils.nobookCase(parent, favoritesLayout, getResources().getString(R.string.home_label_no_files)));
-                }
-
-                if(recentBooks != null && recentBooks.size() > 0){
-                    for(String bookID : recentBooks){
-                        for(JSONObject book : books){
+                    int cptFavs = 0;
+                    int cptRecents = 0;
+                    if (favoredBooks != null && favoredBooks.size() > 0) {
+                        for (JSONObject book : books) {
                             Log.w("Book", new Gson().toJson(book));
-                            try{
-                                if(!bookID.equals(book.getString("guid"))){ continue; }
-                                cptRecents += 1;
+                            try {
+                                if (!favoredBooks.contains(book.getString("guid"))) {
+                                    continue;
+                                }
+                                cptFavs += 1;
                                 JSONArray files = book.getJSONArray("files");
                                 LinearLayout Bcase = utils.bookCase(
                                         parent,
-                                        recentsLayout,
+                                        favoritesLayout,
                                         book.getString("guid"),
                                         book.getString("title"),
                                         false, true
                                 );
                                 utils.replaceBookCaseCover(Bcase, book.getString("cover"));
-                                ((CheckBox)Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
+                                ((CheckBox) Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
 
                                 List<String> data = new ArrayList<String>();
                                 data.add(book.getString("title") + "(" + files.getJSONObject(0).getString("format") + ")");
                                 data.add(files.getJSONObject(0).getString("link"));
                                 data.add("file");
                                 data.add(book.getString("guid"));
-                                data.add(((JSONObject)files.get(0)).getString("guid"));
+                                data.add(((JSONObject) files.get(0)).getString("guid"));
                                 Bcase.setTag(data);
                                 Bcase.setOnClickListener(btnListener);
 
-                                recentsLayout.addView(Bcase);
+                                favoritesLayout.addView(Bcase);
+                            } catch (Exception err) {
                             }
-                            catch (Exception err){}
                         }
-
                     }
-                }
-                if(cptRecents == 0){
-                    recentsLayout.addView(utils.nobookCase(parent, recentsLayout, getResources().getString(R.string.home_label_no_files)));
-                }
+                    if (cptFavs == 0) {
+                        favoritesLayout.addView(utils.nobookCase(parent, favoritesLayout, getResources().getString(R.string.home_label_no_files)));
+                    }
 
-            }
-        });
+                    if (recentBooks != null && recentBooks.size() > 0) {
+                        for (String bookID : recentBooks) {
+                            for (JSONObject book : books) {
+                                Log.w("Book", new Gson().toJson(book));
+                                try {
+                                    if (!bookID.equals(book.getString("guid"))) {
+                                        continue;
+                                    }
+                                    cptRecents += 1;
+                                    JSONArray files = book.getJSONArray("files");
+                                    LinearLayout Bcase = utils.bookCase(
+                                            parent,
+                                            recentsLayout,
+                                            book.getString("guid"),
+                                            book.getString("title"),
+                                            false, true
+                                    );
+                                    utils.replaceBookCaseCover(Bcase, book.getString("cover"));
+                                    ((CheckBox) Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
+
+                                    List<String> data = new ArrayList<String>();
+                                    data.add(book.getString("title") + "(" + files.getJSONObject(0).getString("format") + ")");
+                                    data.add(files.getJSONObject(0).getString("link"));
+                                    data.add("file");
+                                    data.add(book.getString("guid"));
+                                    data.add(((JSONObject) files.get(0)).getString("guid"));
+                                    Bcase.setTag(data);
+                                    Bcase.setOnClickListener(btnListener);
+
+                                    recentsLayout.addView(Bcase);
+                                } catch (Exception err) {
+                                }
+                            }
+
+                        }
+                    }
+                    if (cptRecents == 0) {
+                        recentsLayout.addView(utils.nobookCase(parent, recentsLayout, getResources().getString(R.string.home_label_no_files)));
+                    }
+
+                }
+            });
+        }
     }
 
 

@@ -91,48 +91,56 @@ public class LibraryFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        try{ ((MainDrawerActivity)this.getActivity()).hideBottomBar(); } catch (Exception err){}
+        MainDrawerActivity activity = null;
+        try{
+            activity = (MainDrawerActivity)this.getActivity();
+            activity.hideBottomBar();
+            activity.setFragmentName("Library");
+        }
+        catch (Exception err){}
 
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mainLayout.removeAllViews();
-                List<JSONObject> books = parent.dbh.getBooks();
-                utils.resetCheckboxesArray();
+        if(activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mainLayout.removeAllViews();
+                    List<JSONObject> books = parent.dbh.getBooks();
+                    utils.resetCheckboxesArray();
 
-                if(books.size() == 0)
-                {mainLayout.addView(utils.nobookCase(parent, mainLayout, getResources().getString(R.string.library_label_no_files)));}
-                else{
-                    for(JSONObject book : books){
-                        Log.w("Book", new Gson().toJson(book));
-                        try{
-                            JSONArray files = book.getJSONArray("files");
-                            LinearLayout Bcase = utils.bookCase(
-                                    parent,
-                                    mainLayout,
-                                    book.getString("guid"),
-                                    book.getString("title"),
-                                    false, true
-                            );
-                            utils.replaceBookCaseCover(Bcase, book.getString("cover"));
-                            ((CheckBox)Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
+                    if (books.size() == 0) {
+                        mainLayout.addView(utils.nobookCase(parent, mainLayout, getResources().getString(R.string.library_label_no_files)));
+                    } else {
+                        for (JSONObject book : books) {
+                            Log.w("Book", new Gson().toJson(book));
+                            try {
+                                JSONArray files = book.getJSONArray("files");
+                                LinearLayout Bcase = utils.bookCase(
+                                        parent,
+                                        mainLayout,
+                                        book.getString("guid"),
+                                        book.getString("title"),
+                                        false, true
+                                );
+                                utils.replaceBookCaseCover(Bcase, book.getString("cover"));
+                                ((CheckBox) Bcase.findViewById(Bcase.getLabelFor())).setVisibility(View.GONE);
 
-                            List<String> data = new ArrayList<String>();
-                            data.add(book.getString("title") + "(" + files.getJSONObject(0).getString("format") + ")");
-                            data.add(files.getJSONObject(0).getString("link"));
-                            data.add("file");
-                            data.add(book.getString("guid"));
-                            data.add(((JSONObject)files.get(0)).getString("guid"));
-                            Bcase.setTag(data);
-                            Bcase.setOnClickListener(btnListener);
+                                List<String> data = new ArrayList<String>();
+                                data.add(book.getString("title") + "(" + files.getJSONObject(0).getString("format") + ")");
+                                data.add(files.getJSONObject(0).getString("link"));
+                                data.add("file");
+                                data.add(book.getString("guid"));
+                                data.add(((JSONObject) files.get(0)).getString("guid"));
+                                Bcase.setTag(data);
+                                Bcase.setOnClickListener(btnListener);
 
-                            mainLayout.addView(Bcase);
+                                mainLayout.addView(Bcase);
+                            } catch (Exception err) {
+                            }
                         }
-                        catch (Exception err){}
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,

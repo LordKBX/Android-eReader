@@ -3,8 +3,6 @@ package lordkbx.workshop.ereader;
 import android.Manifest;
 import android.app.Activity;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,17 +12,16 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.MediaStore;
-import android.renderscript.ScriptGroup;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.ArrayMap;
 import android.util.Base64;
 import android.util.Log;
@@ -32,14 +29,12 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.navigation.NavigationView;
@@ -68,11 +63,8 @@ import java.io.IOException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -100,6 +92,8 @@ public class MainDrawerActivity extends AppCompatActivity {
     private boolean BookInfoCoverChanged = false;
     private static final int coverMaxWidth = 600;
     private ArrayMap<String, Integer> currentTags = null;
+    private String fragmentName = "";
+    private List<JSONObject> syncBooksList = new ArrayList<JSONObject>();
 
     private static MainDrawerActivity mInstance = null;
 
@@ -113,6 +107,10 @@ public class MainDrawerActivity extends AppCompatActivity {
         if (mInstance == null) { mInstance = new MainDrawerActivity(); }
         return mInstance;
     }
+
+    public void setFragmentName(String name){ this.fragmentName = name; }
+    public void setCurrentTags(ArrayMap<String, Integer> tags){ this.currentTags = tags; }
+    public void setSyncBooksList(List<JSONObject> books){ this.syncBooksList = books; }
 
     @Override
     protected void onResume() {
@@ -144,7 +142,6 @@ public class MainDrawerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().setNavigationBarColor(getResources().getColor(R.color.statusBar, getTheme()));
         Storage.setContext(this.getApplicationContext());
-        //dbh.getReadableDatabase().
 
         setContentView(R.layout.activity_main_drawer);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -157,6 +154,9 @@ public class MainDrawerActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        String tx_version = getResources().getString(R.string.nav_header_subtitle).replace("X", BuildConfig.VERSION_NAME);
+        ((TextView)navigationView.getHeaderView(0).findViewById(R.id.header_version_label)).setText(tx_version);
 
         bottomBar = (BottomAppBar)findViewById(R.id.bottomAppBar);
         hideBottomBar();
@@ -503,13 +503,11 @@ public class MainDrawerActivity extends AppCompatActivity {
         ctx.getResources().updateConfiguration(cfg, null);
     }
 
-
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         String id = "";
         try{ id = utils.getCheckboxesArray().getString(""+(int)v.getTag()); } catch (Exception err){}
         List<JSONObject> books = dbh.getBooks(id);
-        if(books == null || books.size() == 0){return;}
         super.onCreateContextMenu(menu, v, menuInfo);
         String fav = "";
         try{ fav = books.get(0).getString("fav_guid"); } catch (Exception err){}
@@ -520,8 +518,11 @@ public class MainDrawerActivity extends AppCompatActivity {
         Log.e("Button", "R.id.home_flex_layout_favs = "+R.id.home_flex_layout_favs);
         Log.e("Button", "R.id.home_flex_layout_recents = "+R.id.home_flex_layout_recents);
 
+        Log.e("FRAGMENT NAME", fragmentName);
+
         // add menu items
         menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_info);
+
         if(idP == R.id.library_flex_layout || idP == R.id.home_flex_layout_recents){
             if(fav == null || fav.equals("")){ menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_fav_add); }
             else{ menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_fav_del); }
@@ -529,8 +530,11 @@ public class MainDrawerActivity extends AppCompatActivity {
         if(idP == R.id.home_flex_layout_favs){
             menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_fav_del);
         }
-        if(idP == R.id.library_flex_layout){
-            menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_del);
+
+        if(idP == R.id.library_flex_layout || idP == R.id.sync_flex_layout){
+            if(books != null && books.size() > 0){
+                menu.add((int)v.getTag(), v.getId(), 0, R.string.book_ctm_del);
+            }
         }
     }
 
@@ -547,16 +551,33 @@ public class MainDrawerActivity extends AppCompatActivity {
         if(item.getTitle().equals(getResources().getString(R.string.book_ctm_fav_add))){ dbh.addFavorite(id); this.recreate(); }
         if(item.getTitle().equals(getResources().getString(R.string.book_ctm_fav_del))){ dbh.delFavorite(id); this.recreate(); }
         if(item.getTitle().equals(getResources().getString(R.string.book_ctm_del))){ dbh.deleteBook(id); this.recreate(); }
-        if(item.getTitle().equals(getResources().getString(R.string.book_ctm_info))){ this.bookInfo(id); }
+        if(item.getTitle().equals(getResources().getString(R.string.book_ctm_info))){
+            if(!fragmentName.equals("Sync")){ this.bookInfo(id); }
+            else{ this.bookInfo(id, true); }
+        }
 
         return true;
     }
 
-    private void bookInfo(String bookID){
+    private void bookInfo(String bookID ){ this.bookInfo(bookID, false); }
+    private void bookInfo(String bookID, boolean fromSync){
         try {
-            List<JSONObject> books = dbh.getBooks(bookID);
-            currentTags = dbh.getTags();
-            if(books == null || books.size() == 0){ return; }
+            final List<JSONObject> books = new ArrayList<JSONObject>();
+            if(!fromSync) {
+                try{ books.addAll(dbh.getBooks(bookID)); } catch (Exception ignored){}
+                currentTags = dbh.getTags();
+            }
+            else {
+                try{
+                    for(int i = 0; i < syncBooksList.size(); i++){
+                        JSONObject ob = syncBooksList.get(i);
+                        if(ob.getString("guid").equals(bookID)){ books.add(ob); }
+                    }
+                }
+                catch (Exception ignored){}
+                // currentTags = dbh.getTags();
+            }
+            if(books.size() == 0){ return; }
             androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
             builder.setCancelable(false);
             builder.setTitle(R.string.book_ctm_info);
@@ -570,53 +591,124 @@ public class MainDrawerActivity extends AppCompatActivity {
             ((TextView)mView.findViewById(R.id.layout_book_info_label_synopsis)).setText(getResources().getString(R.string.dialog_book_info_synopsis));
             ((Button)mView.findViewById(R.id.layout_book_info_button_download_cover)).setText(getResources().getString(R.string.dialog_book_info_import_cover));
 
-            ((Button)mView.findViewById(R.id.layout_book_info_button_download_cover)).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ImagePicker.with(MainDrawerActivity.getInstance())
-                            .crop()	    			//Crop image(Optional), Check Customization for more option
-                            .compress(1024)			//Final image size will be less than 1 MB(Optional)
-                            .maxResultSize(600, 600)	//Final image resolution will be less than 1080 x 1080(Optional)
-                            .start();
-
-                    ((EditText)mView.findViewById(R.id.layout_book_info_cover_hidden)).setText("");
-                }
-            });
-
-            ((Button)mView.findViewById(R.id.layout_book_info_button_tags_clear)).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText("");
-                }
-            });
+            EditText fieldTitle = (EditText)mView.findViewById(R.id.layout_book_info_input_title);
+            EditText fieldAuthors = (EditText)mView.findViewById(R.id.layout_book_info_input_authors);
+            EditText fieldSeriesName = (EditText)mView.findViewById(R.id.layout_book_info_input_series_name);
 
             List<String> ntags = new ArrayList<String>();
-            for(String tag : (String[])currentTags.keySet().toArray(new String[]{})){ ntags.add(tag); }
+            Collections.addAll(ntags, (String[]) currentTags.keySet().toArray(new String[]{}));
 
-            ((MultiSpinner)mView.findViewById(R.id.layout_book_info_spinner_tags)).setItems(
-                    ntags, books.get(0).getString("tags"),
-                    new MultiSpinner.MultiSpinnerListener() {
-                        @Override
-                        public void onItemsSelected(boolean[] selected) {
-                            String tags = "";
-                            for(int i = 0; i < ntags.size(); i++){
-                                if(selected[i]){
-                                    if(!tags.equals("")){ tags += "\n"; }
-                                    tags += ntags.get(i);
+            if(!fromSync){
+                ((Button)mView.findViewById(R.id.layout_book_info_button_download_cover)).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ImagePicker.with(MainDrawerActivity.getInstance())
+                                .crop()	    			//Crop image(Optional), Check Customization for more option
+                                .compress(1024)			//Final image size will be less than 1 MB(Optional)
+                                .maxResultSize(600, 600)	//Final image resolution will be less than 1080 x 1080(Optional)
+                                .start();
+
+                        ((EditText)mView.findViewById(R.id.layout_book_info_cover_hidden)).setText("");
+                    }
+                });
+
+                ((Button)mView.findViewById(R.id.layout_book_info_button_tags_clear)).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText("");
+                        ((MultiSpinner)mView.findViewById(R.id.layout_book_info_spinner_tags)).unselectAll();
+                    }
+                });
+
+                ((MultiSpinner)mView.findViewById(R.id.layout_book_info_spinner_tags)).setItems(
+                        ntags, books.get(0).getString("tags"),
+                        new MultiSpinner.MultiSpinnerListener() {
+                            @Override
+                            public void onItemsSelected(boolean[] selected) {
+                                String tags = "";
+                                for(int i = 0; i < ntags.size(); i++){
+                                    if(selected[i]){
+                                        if(!tags.equals("")){ tags += "\n"; }
+                                        tags += ntags.get(i);
+                                    }
                                 }
+                                ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText(tags);
                             }
-                            ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText(tags);
+                        }
+                );
+
+                ((Button)mView.findViewById(R.id.layout_book_info_button_tags_select)).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ((MultiSpinner)mView.findViewById(R.id.layout_book_info_spinner_tags)).performClick();
+                    }
+                });
+
+                fieldTitle.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
+                    @Override
+                    public void afterTextChanged(Editable editable) { }
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                        StringBuilder textBuiler = new StringBuilder(charSequence);
+                        if(textBuiler.indexOf("\n") >= 0){
+                            String text = textBuiler.toString();
+                            text = text.replace("\r", "").replace("\n", "");
+                            fieldTitle.setText(text);
+                            fieldTitle.setSelection(start);
                         }
                     }
-            );
+                });
 
-            ((Button)mView.findViewById(R.id.layout_book_info_button_tags_select)).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((MultiSpinner)mView.findViewById(R.id.layout_book_info_spinner_tags)).performClick();
-                    Log.e("TITLE", new Gson().toJson(currentTags));
-                }
-            });
+                fieldAuthors.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
+                    @Override
+                    public void afterTextChanged(Editable editable) { }
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                        StringBuilder textBuiler = new StringBuilder(charSequence);
+                        String tx1 = textBuiler.toString()
+                                .replace("\r", "")
+                                .replaceAll("[ ]{2,}/gm", " ")
+                                .replace("\n \n", "\n\n");
+                        if(tx1.contains("\n\n")){
+                            fieldAuthors.setText(tx1.replace("\n\n", "\n"));
+                            try{ fieldAuthors.setSelection(start); } catch (Exception ignored){}
+                        }
+                    }
+                });
+
+                fieldSeriesName.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
+                    @Override
+                    public void afterTextChanged(Editable editable) { }
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                        StringBuilder textBuiler = new StringBuilder(charSequence);
+                        if(textBuiler.indexOf("\n") >= 0){
+                            String text = textBuiler.toString();
+                            text = text.replace("\r", "").replace("\n", "");
+                            fieldSeriesName.setText(text);
+                            fieldSeriesName.setSelection(start);
+                        }
+                    }
+                });
+            }
+            else{
+                ((Button)mView.findViewById(R.id.layout_book_info_button_download_cover)).setVisibility(View.GONE);
+                ((Button)mView.findViewById(R.id.layout_book_info_button_tags_clear)).setVisibility(View.GONE);
+                ((Button)mView.findViewById(R.id.layout_book_info_button_tags_select)).setVisibility(View.GONE);
+
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_title)).setEnabled(false);
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_authors)).setEnabled(false);
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_series_name)).setEnabled(false);
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).setEnabled(false);
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setEnabled(false);
+                ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).setEnabled(false);
+            }
 
             BookInfoCover = ((ImageView)mView.findViewById(R.id.layout_book_info_cover));
             BookInfoCoverHiden = "";
@@ -627,52 +719,83 @@ public class MainDrawerActivity extends AppCompatActivity {
                 BookInfoCover.setImageDrawable(drawable);
             }
 
-            ((EditText)mView.findViewById(R.id.layout_book_info_input_title)).setText(books.get(0).getString("title"));
-            ((EditText)mView.findViewById(R.id.layout_book_info_input_authors)).setText(books.get(0).getString("authors"));
-            ((EditText)mView.findViewById(R.id.layout_book_info_input_series_name)).setText(books.get(0).getString("series"));
+            fieldTitle.setText(books.get(0).getString("title"));
+            fieldAuthors.setText(books.get(0).getString("authors").replace(";", "\n"));
+            fieldSeriesName.setText(books.get(0).getString("series"));
             ((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).setText(books.get(0).getString("series_vol"));
             ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).setText(books.get(0).getString("tags").replace(";", "\n"));
             String syp = books.get(0).getString("synopsis");
             ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).setText((syp.equals("null"))?"":books.get(0).getString("synopsis"));
 
-            builder.setPositiveButton(getResources().getString(R.string.dialog_save), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String title = ((EditText)mView.findViewById(R.id.layout_book_info_input_title)).getText().toString();
-                    String authors = ((EditText)mView.findViewById(R.id.layout_book_info_input_authors)).getText().toString();
-                    String series_name = ((EditText)mView.findViewById(R.id.layout_book_info_input_series_name)).getText().toString();
-                    double series_vol = Double.parseDouble(((EditText)mView.findViewById(R.id.layout_book_info_input_series_number)).getText().toString());
-                    String tagsString = ((EditText)mView.findViewById(R.id.layout_book_info_input_tags)).getText().toString();
-                    String synopsis = ((EditText)mView.findViewById(R.id.layout_book_info_input_synopsis)).getText().toString();
-                    String cover = BookInfoCoverHiden;
+            if(!fromSync) {
+                builder.setPositiveButton(getResources().getString(R.string.dialog_save), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String title = ((EditText) mView.findViewById(R.id.layout_book_info_input_title)).getText().toString();
+                        String authorString = ((EditText) mView.findViewById(R.id.layout_book_info_input_authors)).getText().toString();
+                        String series_name = ((EditText) mView.findViewById(R.id.layout_book_info_input_series_name)).getText().toString();
+                        double series_vol = Double.parseDouble(((EditText) mView.findViewById(R.id.layout_book_info_input_series_number)).getText().toString());
+                        String tagsString = ((EditText) mView.findViewById(R.id.layout_book_info_input_tags)).getText().toString();
+                        String synopsis = ((EditText) mView.findViewById(R.id.layout_book_info_input_synopsis)).getText().toString();
+                        String cover = BookInfoCoverHiden;
 
-                    List<String> lst = new ArrayList<String>();
-                    for(String tag : tagsString.split("\n")){ lst.add(tag.trim()); }
-                    lst.sort(new StringComparator());
-                    String[] tags = lst.toArray(new String[]{});
+                        List<String> lsa = new ArrayList<String>();
+                        for (String author : authorString.split("\n")) {
+                            lsa.add(author.trim());
+                        }
+                        lsa.sort(new StringComparator());
+                        String authors = String.join(";", lsa.toArray(new String[]{}));
 
-                    try{
-                        if(!books.get(0).getString("title").equals(title)){ dbh.updateBookTitle(bookID, title); }
-                        if(!books.get(0).getString("authors").equals(authors)){ dbh.updateBookAuthors(bookID, authors); }
-                        if(!books.get(0).getString("series").equals(series_name) || Double.parseDouble(books.get(0).getString("series_vol")) != series_vol){ dbh.updateBookSeries(bookID, series_name, series_vol); }
-                        if(!books.get(0).getString("tags").replace(";", "\n").equals(tagsString)){ dbh.updateBookTags(bookID, tags); }
-                        if(!books.get(0).getString("synopsis").equals(synopsis)){ dbh.updateBookSynopsis(bookID, synopsis); }
-                        if(BookInfoCoverChanged){ dbh.updateBookCover(bookID, "data:image/jpeg;base64,"+cover); }
+                        List<String> lst = new ArrayList<String>();
+                        for (String tag : tagsString.split("\n")) {
+                            lst.add(tag.trim());
+                        }
+                        lst.sort(new StringComparator());
+                        String[] tags = lst.toArray(new String[]{});
+
+                        try {
+                            if (!books.get(0).getString("title").equals(title)) {
+                                dbh.updateBookTitle(bookID, title);
+                            }
+                            if (!books.get(0).getString("authors").equals(authors)) {
+                                dbh.updateBookAuthors(bookID, authors);
+                            }
+                            if (!books.get(0).getString("series").equals(series_name) || Double.parseDouble(books.get(0).getString("series_vol")) != series_vol) {
+                                dbh.updateBookSeries(bookID, series_name, series_vol);
+                            }
+                            if (!books.get(0).getString("tags").replace(";", "\n").equals(tagsString)) {
+                                dbh.updateBookTags(bookID, tags);
+                            }
+                            if (!books.get(0).getString("synopsis").equals(synopsis)) {
+                                dbh.updateBookSynopsis(bookID, synopsis);
+                            }
+                            if (BookInfoCoverChanged) {
+                                dbh.updateBookCover(bookID, "data:image/jpeg;base64," + cover);
+                            }
+                        } catch (Exception err) {
+                        }
+
+                        dialog.dismiss();
+                        BookInfoCoverHiden = "";
+                        BookInfoCover = null;
+                        recreate();
                     }
-                    catch (Exception err){}
-
-                    dialog.dismiss();
-                    BookInfoCoverHiden = "";
-                    BookInfoCover = null;
-                    recreate();
-                }
-            });
-            builder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
+                });
+                builder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+            }
+            else{
+                builder.setNegativeButton(getResources().getString(R.string.dialog_close), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+            }
 
             AlertDialog diagI = builder.create();
             diagI.show();
