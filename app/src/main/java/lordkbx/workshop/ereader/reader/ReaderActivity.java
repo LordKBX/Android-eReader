@@ -236,7 +236,9 @@ public class ReaderActivity extends AppCompatActivity{
         try{ directory.mkdirs(); } catch (Exception err){}
         //Storage.deleteDirectoryContent(directory.getAbsolutePath());
         List<String> files = null;
-        String fileHash = Storage.fileHash(message).trim();
+        String fileHash = Storage.fileHash(message);
+        if(fileHash == null){ finish(); }
+        fileHash = fileHash.trim();
         Log.e("fileHash =", fileHash);
         Storage.existFile(directory.getAbsolutePath() + "/HASH");
         boolean cached = false;

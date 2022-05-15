@@ -373,7 +373,7 @@ public class SyncFragment extends Fragment {
                                 checkboxes = new JSONObject();
                                 dataBooks = (JSONObject) new JSONTokener(body).nextValue();
                                 if(dataBooks.getInt("SessionStatus") != 1){
-                                    errorScreen(getResources().getString(R.string.sync_message_error_login));
+                                    errorScreen(parent.getResources().getString(R.string.sync_message_error_login));
                                     return;
                                 }
                                 dataBooksFiles = new JSONObject();
@@ -439,19 +439,19 @@ public class SyncFragment extends Fragment {
                                 Log.e("get books", err.getMessage());
                                 err.printStackTrace();
 
-                                errorScreen(getResources().getString(R.string.sync_message_error_processing_data));
+                                errorScreen(parent.getResources().getString(R.string.sync_message_error_processing_data));
                             }
                         }
 
                         @Override
                         public void error(String error) {
-                            errorScreen(getResources().getString(R.string.sync_message_error_processing_data));
+                            errorScreen(parent.getResources().getString(R.string.sync_message_error_processing_data));
                         }
                     });
                 }
                 @Override
                 public void error(String error) {
-                    errorScreen(getResources().getString(R.string.sync_message_error_server_access));
+                    errorScreen(parent.getResources().getString(R.string.sync_message_error_server_access));
                 }
             }
         );
@@ -459,7 +459,7 @@ public class SyncFragment extends Fragment {
 
     public void loadingScreen(){
         mainLayout.removeAllViews();
-        LinearLayout ll = new LinearLayout(this.getContext());
+        LinearLayout ll = new LinearLayout(frag.getContext());
         ll.setMinimumWidth(mainLayout.getWidth());
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
         ll.setOrientation(LinearLayout.HORIZONTAL);
@@ -813,8 +813,8 @@ public class SyncFragment extends Fragment {
                         }
                         if(downloadFileIndex >= downloadListFiles.size()){
                             downloadDialog.dismiss();
-                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
-                            else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
+                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
+                            else{ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
                         }
                         else{ downloadNext(); }
                     }
@@ -825,8 +825,8 @@ public class SyncFragment extends Fragment {
                         downloadFileErrors += 1;
                         if(downloadFileIndex >= downloadListFiles.size()){
                             downloadDialog.dismiss();
-                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
-                            else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
+                            if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
+                            else{ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
                         }
                         else{ downloadNext(); }
                     }
@@ -838,8 +838,8 @@ public class SyncFragment extends Fragment {
             downloadFileErrors += 1;
             if(downloadFileIndex >= downloadListFiles.size()){
                 downloadDialog.dismiss();
-                if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
-                else{ Toast.makeText(frag.getContext(), getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
+                if(downloadFileErrors > 0){ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_error).replace("[X]", ""+ downloadFileErrors), Toast.LENGTH_LONG).show(); }
+                else{ Toast.makeText(frag.getContext(), parent.getResources().getString(R.string.sync_message_download_end_ok), Toast.LENGTH_LONG).show(); }
             }
             else{ downloadNext(); }
         }
