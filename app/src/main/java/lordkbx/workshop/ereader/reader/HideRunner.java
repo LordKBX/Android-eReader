@@ -10,5 +10,7 @@ public class HideRunner implements Runnable {
     }
 
     @Override
-    public void run() { this.activity.hide(); }
+    public void run() {
+        this.activity.hide();
+    }
 }

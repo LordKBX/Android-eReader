@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "lordkbx.workshop.ereader"
         minSdkVersion 26
-        targetSdkVersion 30
-        versionCode 1020
-        versionName "1.0.2.0"
+        targetSdkVersion 32
+        versionCode 1021
+        versionName "1.0.2.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,6 +55,7 @@ dependencies {
     }
     implementation 'org.slf4j:slf4j-android:1.7.25'
     implementation 'com.github.bumptech.glide:glide:4.13.2'
+    implementation 'com.github.dhaval2404:imagepicker:2.1'
     implementation 'com.github.dhaval2404:imagepicker:2.1'
 
     testImplementation 'junit:junit:4.13.2'

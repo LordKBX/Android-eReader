@@ -58,12 +58,17 @@ public class WebViewCallBackObject {
     }
 
     public void addToc(String id, String path, String title, String data, boolean hidden) {
+        addToc(id, path, title, data, hidden, false, "");
+    }
+    public void addToc(String id, String path, String title, String data, boolean hidden, boolean relative, String anchor) {
         Map<String, String> map = new HashMap<String, String>();
         map.put("id", id);
         map.put("path", path);
         map.put("title", title);
         map.put("data", data);
         map.put("hidden", hidden ? "true" : "false");
+        map.put("relative", relative ? "true" : "false");
+        map.put("anchor", anchor);
         this.tableOfContent.put(this.tableOfContentSize, map);
         this.tableOfContentSize += 1;
     }
@@ -75,11 +80,9 @@ public class WebViewCallBackObject {
     public int getTocPosition() {
         return this.tableOfContentPosition;
     }
-
+    @JavascriptInterface
     public void setTocPosition(int position) {
-        if (position < 0 || position >= this.tableOfContentSize) {
-            return;
-        }
+        if (position < 0 || position >= this.tableOfContentSize) { return; }
         this.tableOfContentPosition = position;
     }
 

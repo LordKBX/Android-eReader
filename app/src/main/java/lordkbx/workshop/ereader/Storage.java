@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.zip.ZipFile;
 
 public class Storage {
     private static Context context;
@@ -29,6 +30,25 @@ public class Storage {
         context = ctx;
     }
     private static String[] hashErrorCodes = {"Execution Error", "Unknown Algorithm", "File not found", "File access error", "Digest error"};
+
+    public static boolean isZip(String path) {
+        return isZip(new File(path));
+    }
+    public static boolean isZip(File file) {
+        try {
+            ZipFile zipFile = new ZipFile(file);
+            String zipname = zipFile.getName();
+            return true;
+        } catch (IOException e) {
+            Log.w("DEBUG_APP", "Not a zip file");
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            Log.w("DEBUG_APP", "Not a zip file");
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public static String cleanFileName(String input){
         StringBuffer buffer = new StringBuffer();

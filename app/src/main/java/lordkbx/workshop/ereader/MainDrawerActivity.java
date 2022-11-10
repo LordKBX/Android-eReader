@@ -29,6 +29,7 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -63,6 +64,7 @@ import java.io.IOException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -225,8 +227,13 @@ public class MainDrawerActivity extends AppCompatActivity {
     public void importFile(){
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("*/*");
-        String[] mimetypes = {"application/epub+zip", "application/pdf", "application/x-cbz"};
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+        if(MimeTypeMap.getSingleton().hasMimeType("application/x-cbz")){
+            String[] mimetypes = {
+                    "application/epub+zip", "application/pdf", "application/x-cbz",
+                    "application/vnd.comicbook+zip", "application/zip"
+            };
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+        }
         startActivityForResult(intent, 7);
     }
 
@@ -249,14 +256,22 @@ public class MainDrawerActivity extends AppCompatActivity {
             // Pull that URI using resultData.getData().
             if (resultData != null) {
                 uri = resultData.getData();
-                Log.d("DEBUG_APP, import file", "Uri: " + uri.toString());
+                Log.w("DEBUG_APP, import file", "Uri: " + uri.toString());
                 try{
                     int i;
                     String sourceFileName = getFileNameByUri(uri);
                     String ofte = sourceFileName.substring(sourceFileName.lastIndexOf("."));
                     String fte = ofte.toUpperCase();
-                    String fileName = sourceFileName.substring(0, sourceFileName.lastIndexOf("."));
+                    List<String> files_types = Arrays.asList("EPUB", "EPUB2", "EPUB3", "PDF", "CBZ");
+                    if (!files_types.contains(fte.replace(".", "").toUpperCase())) {
+                        Log.w("DEBUG_APP, import file", "Error fileName");
+                        Log.w("DEBUG_APP, import file", "fte = "+fte);
+                        Log.w("DEBUG_APP, import file", "files_types = "+files_types.toString());
+                        return;
+                    }
+                    String fileName = sourceFileName.substring(0, sourceFileName.lastIndexOf(".")).replace(" ", "_").replaceAll("[^\\x21-\\x7F]", "*");
                     dialogRetText = fileName;
+                    ;
                     Log.d("DEBUG_APP", "name is " + fileName);
                     String destinationFilename = Storage.getAppStoragePath("books")+"/"+dialogRetText;
                     
@@ -327,11 +342,23 @@ public class MainDrawerActivity extends AppCompatActivity {
                     String tags = "";
 
                     String size = Storage.formatSize(new File(destinationFilename).length());
-                    Log.d("DEBUG_APP", "file size = " + size);
+                    Log.w("DEBUG_APP", "file size = " + size);
                     String mimeType = Storage.getMimeType(sourceFileName);
-                    Log.d("DEBUG_APP", "mimeType = " + mimeType);
+                    Log.w("DEBUG_APP", "mimeType = " + ((mimeType == null)?"null":mimeType));
                     //"application/epub+zip", "application/pdf", "application/x-cbz"
-                    String format = (mimeType.equals("application/epub+zip"))?"EPUB":((mimeType.equals("application/pdf"))?"PDF":"CBZ");
+                    String format = (mimeType == null)?"CBZ":(mimeType.equals("application/epub+zip"))?"EPUB":((mimeType.equals("application/pdf"))?"PDF":"CBZ");
+                    if(!MimeTypeMap.getSingleton().hasMimeType("application/x-cbz") && mimeType == null){
+                        if(format == "CBZ"){
+                            if(!destinationFilename.toLowerCase().endsWith(".cbz")){
+                                Storage.deleteFile(destinationFilename);
+                                return;
+                            }
+                            if(!Storage.isZip(destinationFilename)){
+                                Storage.deleteFile(destinationFilename);
+                                return;
+                            }
+                        }
+                    }
                     String hash = Storage.fileHash(destinationFilename);
 
 
@@ -437,7 +464,8 @@ public class MainDrawerActivity extends AppCompatActivity {
                 Log.d("DEBUG_APP, import file", "Uri: " + uri.toString());
 
                 try{
-                    FileInputStream fi = new FileInputStream(new File(uri.toString().replace("file://", "")));
+                    String dest = uri.toString().replace("file://", "").replace(" ", "_").replaceAll("[^\\x21-\\x7F]", "*");
+                    FileInputStream fi = new FileInputStream(new File(dest));
                     ByteArrayOutputStream baos1 = new ByteArrayOutputStream();
                     int read;
                     while((read = fi.read()) != -1) { baos1.write(read); }

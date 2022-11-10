@@ -49,6 +49,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.RequestQueue;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -153,39 +154,64 @@ class APIClient{
     }
 
     public void Download(String url, String FileName, CallBack callback){
-        InputStreamRequest request = new InputStreamRequest(Request.Method.GET, url,
-            new Response.Listener<byte[]>() {
-                @Override
-                public void onResponse(byte[] response) {
-                    // TODO handle the response
-                    try {
-                        if (response!=null) {
-                            FileOutputStream outputStream;
-                            String name=FileName;
-                            FileOutputStream stream = new FileOutputStream(name);
-                            stream.write(response);
-                            stream.close();
-                            try {if(callback != null){ callback.run("Download:OK", url+"<>"+FileName); }}
-                            catch (Exception err){ err.printStackTrace(); callback.error(err.getMessage());}
+        try {
+            InputStreamRequest request = new InputStreamRequest(Request.Method.GET, url,
+                    new Response.Listener<byte[]>() {
+                        @Override
+                        public void onResponse(byte[] response) {
+                            // TODO handle the response
+                            try {
+                                if (response!=null) {
+                                    FileOutputStream outputStream;
+                                    String name=FileName;
+                                    FileOutputStream stream = new FileOutputStream(name);
+                                    stream.write(response);
+                                    stream.close();
+                                    try {if(callback != null){ callback.run("Download:OK", url+"<>"+FileName); }}
+                                    catch (Exception err){ err.printStackTrace(); callback.error(err.getMessage());}
+                                }
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                Log.e("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+                                e.printStackTrace();
+                                try {if(callback != null){ callback.error(e.getMessage()); }}
+                                catch (Exception err){}
+                            }
                         }
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
-                        e.printStackTrace();
-                        try {if(callback != null){ callback.error(e.getMessage()); }}
-                        catch (Exception err){}
-                    }
-                }
-            },
-            new Response.ErrorListener() {
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO handle the error
+                            error.printStackTrace();
+                        }
+                    },null
+            );
+            request.setRetryPolicy(new RetryPolicy() {
                 @Override
-                public void onErrorResponse(VolleyError error) {
-                    // TODO handle the error
+                public int getCurrentTimeout() {
+                    return 5000000;
+                }
+
+                @Override
+                public int getCurrentRetryCount() {
+                    return 5000000;
+                }
+
+                @Override
+                public void retry(VolleyError error) throws VolleyError {
+                    Log.e("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
                     error.printStackTrace();
                 }
-            },null
-        );
-        queue.add(request);
+            });
+            Log.w("DEBUG_APP", "DOWNLOAD FILE TIMEOUT = " + request.getTimeoutMs());
+            queue.add(request);
+        }
+        catch (Exception e) {
+            // TODO Auto-generated catch block
+            Log.e("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+            e.printStackTrace();
+        }
     }
 
     public void Login(String user, String password){ Login(user, password, null); }
